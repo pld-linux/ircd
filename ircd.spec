@@ -47,7 +47,7 @@ CFLAGS="$RPM_OPT_FLAGS" LDFLAGS="-s" \
         %{_target_platform}
 
 cd `support/config.guess`
-make all
+%{__make} all
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -59,7 +59,7 @@ install -d		$RPM_BUILD_ROOT%{_sbindir}
 install -d		$RPM_BUILD_ROOT%{_mandir}/man{1,3,5,8}
 install -d		$RPM_BUILD_ROOT/etc/{ircd,rc.d/init.d}
 
-make install DESTDIR=$RPM_BUILD_ROOT \
+%{__make} install DESTDIR=$RPM_BUILD_ROOT \
 	     client_man_dir=$RPM_BUILD_ROOT%{_mandir}/man1 \
 	     conf_man_dir=$RPM_BUILD_ROOT%{_mandir}/man5 \
 	     server_man_dir=$RPM_BUILD_ROOT%{_mandir}/man8
