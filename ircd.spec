@@ -158,13 +158,10 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root)/etc/rc.d/init.d/ircd
 %{_sysconfdir}/ircd
 %{_mandir}/*/*
-%attr(755,root,root) %{_sbindir}/*
-%attr(755,root,root) %{_chroot}%{_sbindir}/*
 %attr(750, root, root) %dir %{_chroot}
 %{_chroot}/lib
 %dir %{_chroot}%{_sysconfdir}
 %dir %{_chroot}%{_prefix}
-%{_chroot}%{_sbindir}
 %{_chroot}%{_sysconfdir}/ld.so.cache
 %attr(444,root,root) %config %{_chroot}%{_sysconfdir}/passwd
 %attr(444,root,root) %config %{_chroot}%{_sysconfdir}/group
@@ -177,3 +174,5 @@ rm -rf $RPM_BUILD_ROOT
 %config(noreplace) %{_chroot}%{_sysconfdir}/ircd/ircd.motd
 %dir %{_chroot}/log
 %dir %{_chroot}/run
+%dir %{_chroot}%{_sbindir}
+%attr(755, root, root) %{_chroot}%{_sbindir}/iauth
