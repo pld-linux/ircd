@@ -1,0 +1,2720 @@
+diff -ur --new-file irc2.10.3p3/common/common_def.h irc2.10.3p3-hoop/common/common_def.h
+--- irc2.10.3p3/common/common_def.h	Fri Feb  5 00:26:35 1999
++++ irc2.10.3p3-hoop/common/common_def.h	Mon Oct 22 17:54:58 2001
+@@ -54,6 +54,7 @@
+ #define PUNCT 8
+ #define DIGIT 16
+ #define SPACE 32
++#define VALID 64
+ 
+ #define isalpha(c) (char_atribs[(u_char)(c)]&ALPHA)
+ #define isspace(c) (char_atribs[(u_char)(c)]&SPACE)
+@@ -74,6 +75,9 @@
+ #define isgraph(c) ((char_atribs[(u_char)(c)]&PRINT) && \
+ 		    ((u_char)(c) != (u_char)0x20))
+ #define ispunct(c) (!(char_atribs[(u_char)(c)]&(CNTRL|ALPHA|DIGIT)))
++#ifdef	RESTRICT_USERNAMES
++#define isvaliduser(c) (char_atribs[(u_char)(c)]&VALID)
++#endif
+ 
+ #ifdef DEBUGMODE
+ # define Debug(x) debug x
+diff -ur --new-file irc2.10.3p3/common/match.c irc2.10.3p3-hoop/common/match.c
+--- irc2.10.3p3/common/match.c	Wed Jul  4 23:44:40 2001
++++ irc2.10.3p3-hoop/common/match.c	Mon Oct 22 17:54:58 2001
+@@ -110,34 +110,37 @@
+ /* 16-23 */	CNTRL, CNTRL, CNTRL, CNTRL, CNTRL, CNTRL, CNTRL, CNTRL,
+ /* 24-31 */	CNTRL, CNTRL, CNTRL, CNTRL, CNTRL, CNTRL, CNTRL, CNTRL,
+ /* space */	PRINT|SPACE,
+-/* !"#$%&'( */	PRINT, PRINT, PRINT, PRINT, PRINT, PRINT, PRINT, PRINT,
+-/* )*+,-./ */	PRINT, PRINT, PRINT, PRINT, PRINT, PRINT, PRINT,
+-/* 0123 */	PRINT|DIGIT, PRINT|DIGIT, PRINT|DIGIT, PRINT|DIGIT,
+-/* 4567 */	PRINT|DIGIT, PRINT|DIGIT, PRINT|DIGIT, PRINT|DIGIT,
+-/* 89:; */	PRINT|DIGIT, PRINT|DIGIT, PRINT, PRINT,
+-/* <=>? */	PRINT, PRINT, PRINT, PRINT,
+-/* @ */		PRINT,
+-/* ABC */	PRINT|ALPHA, PRINT|ALPHA, PRINT|ALPHA,
+-/* DEF */	PRINT|ALPHA, PRINT|ALPHA, PRINT|ALPHA,
+-/* GHI */	PRINT|ALPHA, PRINT|ALPHA, PRINT|ALPHA,
+-/* JKL */	PRINT|ALPHA, PRINT|ALPHA, PRINT|ALPHA,
+-/* MNO */	PRINT|ALPHA, PRINT|ALPHA, PRINT|ALPHA,
+-/* PQR */	PRINT|ALPHA, PRINT|ALPHA, PRINT|ALPHA,
+-/* STU */	PRINT|ALPHA, PRINT|ALPHA, PRINT|ALPHA,
+-/* VWX */	PRINT|ALPHA, PRINT|ALPHA, PRINT|ALPHA,
+-/* YZ[ */	PRINT|ALPHA, PRINT|ALPHA, PRINT|ALPHA,
+-/* \]^ */	PRINT|ALPHA, PRINT|ALPHA, PRINT|ALPHA,
+-/* _`  */	PRINT, PRINT,
+-/* abc */	PRINT|ALPHA, PRINT|ALPHA, PRINT|ALPHA,
+-/* def */	PRINT|ALPHA, PRINT|ALPHA, PRINT|ALPHA,
+-/* ghi */	PRINT|ALPHA, PRINT|ALPHA, PRINT|ALPHA,
+-/* jkl */	PRINT|ALPHA, PRINT|ALPHA, PRINT|ALPHA,
+-/* mno */	PRINT|ALPHA, PRINT|ALPHA, PRINT|ALPHA,
+-/* pqr */	PRINT|ALPHA, PRINT|ALPHA, PRINT|ALPHA,
+-/* stu */	PRINT|ALPHA, PRINT|ALPHA, PRINT|ALPHA,
+-/* vwx */	PRINT|ALPHA, PRINT|ALPHA, PRINT|ALPHA,
+-/* yz{ */	PRINT|ALPHA, PRINT|ALPHA, PRINT|ALPHA,
+-/* \}~ */	PRINT|ALPHA, PRINT|ALPHA, PRINT|ALPHA,
++/* !"#$ */	PRINT, PRINT, PRINT, PRINT,
++/* %&'( */	PRINT, PRINT, PRINT, PRINT,
++/* )*+ */	PRINT, PRINT, PRINT,
++/* ,-. */	PRINT, PRINT|VALID, PRINT|VALID,
++/* /01 */	PRINT, PRINT|DIGIT|VALID, PRINT|DIGIT|VALID,
++/* 234 */	PRINT|DIGIT|VALID, PRINT|DIGIT|VALID, PRINT|DIGIT|VALID,
++/* 567 */	PRINT|DIGIT|VALID, PRINT|DIGIT|VALID, PRINT|DIGIT|VALID,
++/* 89: */	PRINT|DIGIT|VALID, PRINT|DIGIT|VALID, PRINT,
++/* ;<= */	PRINT, PRINT, PRINT,
++/* >?@ */	PRINT, PRINT, PRINT,
++/* ABC */	PRINT|ALPHA|VALID, PRINT|ALPHA|VALID, PRINT|ALPHA|VALID,
++/* DEF */	PRINT|ALPHA|VALID, PRINT|ALPHA|VALID, PRINT|ALPHA|VALID,
++/* GHI */	PRINT|ALPHA|VALID, PRINT|ALPHA|VALID, PRINT|ALPHA|VALID,
++/* JKL */	PRINT|ALPHA|VALID, PRINT|ALPHA|VALID, PRINT|ALPHA|VALID,
++/* MNO */	PRINT|ALPHA|VALID, PRINT|ALPHA|VALID, PRINT|ALPHA|VALID,
++/* PQR */	PRINT|ALPHA|VALID, PRINT|ALPHA|VALID, PRINT|ALPHA|VALID,
++/* STU */	PRINT|ALPHA|VALID, PRINT|ALPHA|VALID, PRINT|ALPHA|VALID,
++/* VWX */	PRINT|ALPHA|VALID, PRINT|ALPHA|VALID, PRINT|ALPHA|VALID,
++/* YZ[ */	PRINT|ALPHA|VALID, PRINT|ALPHA|VALID, PRINT|ALPHA|VALID,
++/* \]^ */	PRINT|ALPHA|VALID, PRINT|ALPHA|VALID, PRINT|ALPHA,
++/* _`  */	PRINT|VALID,PRINT,
++/* abc */	PRINT|ALPHA|VALID, PRINT|ALPHA|VALID, PRINT|ALPHA|VALID,
++/* def */	PRINT|ALPHA|VALID, PRINT|ALPHA|VALID, PRINT|ALPHA|VALID,
++/* ghi */	PRINT|ALPHA|VALID, PRINT|ALPHA|VALID, PRINT|ALPHA|VALID,
++/* jkl */	PRINT|ALPHA|VALID, PRINT|ALPHA|VALID, PRINT|ALPHA|VALID,
++/* mno */	PRINT|ALPHA|VALID, PRINT|ALPHA|VALID, PRINT|ALPHA|VALID,
++/* pqr */	PRINT|ALPHA|VALID, PRINT|ALPHA|VALID, PRINT|ALPHA|VALID,
++/* stu */	PRINT|ALPHA|VALID, PRINT|ALPHA|VALID, PRINT|ALPHA|VALID,
++/* vwx */	PRINT|ALPHA|VALID, PRINT|ALPHA|VALID, PRINT|ALPHA|VALID,
++/* yz{ */	PRINT|ALPHA|VALID, PRINT|ALPHA|VALID, PRINT|ALPHA|VALID,
++/* \}~ */	PRINT|ALPHA|VALID, PRINT|ALPHA|VALID, PRINT|ALPHA,
+ /* del */	0,
+ /* 80-8f */	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+ /* 90-9f */	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+diff -ur --new-file irc2.10.3p3/common/msg_def.h irc2.10.3p3-hoop/common/msg_def.h
+--- irc2.10.3p3/common/msg_def.h	Fri Jan 23 14:28:07 1998
++++ irc2.10.3p3-hoop/common/msg_def.h	Mon Oct 22 17:54:58 2001
+@@ -32,6 +32,12 @@
+ #define MSG_QUIT     "QUIT"	/* QUIT */
+ #define MSG_SQUIT    "SQUIT"	/* SQUI */
+ #define MSG_KILL     "KILL"	/* KILL */
++#if defined(OPER_KLINE) || defined(LOCOP_KLINE)
++#define MSG_KLINE    "KLINE"	/* KLIN */
++#endif
++#if defined(OPER_TKLINE) || defined(LOCOP_TKLINE)
++#define MSG_TKLINE   "TKLINE"	/* TKLI */
++#endif
+ #define MSG_INFO     "INFO"	/* INFO */
+ #define MSG_LINKS    "LINKS"	/* LINK */
+ #define MSG_SUMMON   "SUMMON"	/* SUMM */
+diff -ur --new-file irc2.10.3p3/common/numeric_def.h irc2.10.3p3-hoop/common/numeric_def.h
+--- irc2.10.3p3/common/numeric_def.h	Sat Feb 10 20:11:05 2001
++++ irc2.10.3p3-hoop/common/numeric_def.h	Mon Oct 22 17:54:58 2001
+@@ -232,6 +232,7 @@
+ 
+ #define RPL_NOTOPIC          331
+ #define RPL_TOPIC            332
++#define RPL_TOPICWHOTIME     333
+ 
+ #define RPL_INVITING         341
+ #define	RPL_SUMMONING        342
+@@ -335,3 +336,5 @@
+ #define	RPL_TRACEEND         262
+ #define	RPL_TRYAGAIN         263
+ 
++#define RPL_LOCALUSERS       265
++#define RPL_GLOBALUSERS      266
+diff -ur --new-file irc2.10.3p3/common/parse.c irc2.10.3p3-hoop/common/parse.c
+--- irc2.10.3p3/common/parse.c	Tue May 16 19:53:13 2000
++++ irc2.10.3p3-hoop/common/parse.c	Mon Oct 22 17:54:58 2001
+@@ -64,6 +64,12 @@
+   { MSG_KILL,    m_kill,     MAXPARA, MSG_LAG|MSG_REG|MSG_NOU, 0, 0, 0L},
+ #endif
+ #ifndef CLIENT_COMPILE
++#if	defined(OPER_KLINE) || defined(LOCOP_KLINE)
++  { MSG_KLINE,   m_kline,    MAXPARA, MSG_LAG|MSG_REG|MSG_OP|MSG_LOP, 0,0, 0L},
++#endif
++#if defined(OPER_TKLINE) || defined(LOCOP_TKLINE)
++  { MSG_TKLINE,  m_tkline,   MAXPARA, MSG_LAG|MSG_REG|MSG_OP|MSG_LOP, 0,0, 0L},
++#endif
+   { MSG_USER,    m_user,     MAXPARA, MSG_LAG|MSG_NOU, 0, 0, 0L},
+   { MSG_AWAY,    m_away,     MAXPARA, MSG_LAG|MSG_REGU, 0, 0, 0L},
+   { MSG_UMODE,   m_umode,    MAXPARA, MSG_LAG|MSG_REGU, 0, 0, 0L},
+@@ -765,7 +771,12 @@
+ 	if (index(sender, '.') /* <- buggy, it could be a service! */
+ 	    && !index(sender, '@')) /* better.. */
+ 	    {
+-		sendto_flag(SCH_LOCAL, "Squitting unknown %s brought by %s.",
++#ifdef LOCAL_REJECTIONS_ONLY
++			sendto_flag(SCH_NOTICE,
++#else
++			sendto_flag(SCH_LOCAL, 
++#endif
++			"Squitting unknown %s brought by %s.",
+ 			    sender, get_client_name(cptr, FALSE));
+ 		sendto_one(cptr, ":%s SQUIT %s :(Unknown from %s)",
+ 			   me.name, sender, get_client_name(cptr, FALSE));
+@@ -780,7 +791,12 @@
+ 	 * if we get here and sender is a service, we should probably issue
+ 	 * a kill in this case! -krys
+ 	 */
+-		sendto_flag(SCH_LOCAL, "Dropping unknown %s brought by %s.",
++#ifdef LOCAL_REJECTIONS_ONLY
++	sendto_flag(SCH_NOTICE,
++#else
++	sendto_flag(SCH_LOCAL,
++#endif
++		"Dropping unknown %s brought by %s.",
+ 			    sender, get_client_name(cptr, FALSE));
+ }
+ #endif
+diff -ur --new-file irc2.10.3p3/common/send.c irc2.10.3p3-hoop/common/send.c
+--- irc2.10.3p3/common/send.c	Thu Oct 18 23:43:05 2001
++++ irc2.10.3p3-hoop/common/send.c	Mon Oct 22 17:54:58 2001
+@@ -1391,6 +1391,9 @@
+ 	{ SCH_SERVICE,	"&SERVICES",	NULL },
+ 	{ SCH_DEBUG,	"&DEBUG",	NULL },
+ 	{ SCH_AUTH,	"&AUTH",	NULL },
++#ifdef CLIENTS_CHANNEL
++	{ SCH_CLIENTS,	"&CLIENTS",	NULL },
++#endif
+ };
+ 
+ 
+diff -ur --new-file irc2.10.3p3/common/struct_def.h irc2.10.3p3-hoop/common/struct_def.h
+--- irc2.10.3p3/common/struct_def.h	Mon May 14 14:02:08 2001
++++ irc2.10.3p3-hoop/common/struct_def.h	Mon Oct 22 17:54:58 2001
+@@ -47,7 +47,7 @@
+ 				*/
+ #define	USERLEN		10
+ #define	REALLEN	 	50
+-#define	TOPICLEN	80
++#define	TOPICLEN	160
+ #define	CHANNELLEN	50
+ #define	PASSWDLEN 	20
+ #define	KEYLEN		23
+@@ -570,6 +570,10 @@
+ 	u_int	hashv;		/* raw hash value */
+ 	Mode	mode;
+ 	char	topic[TOPICLEN+1];
++#ifdef TOPICWHOTIME
++	char    topic_nuh[BANLEN+1];
++	time_t  topic_time;
++#endif
+ 	int	users;		/* current membership total */
+ 	Link	*members;	/* channel members */
+ 	Link	*invites;	/* outstanding invitations */
+@@ -674,6 +678,20 @@
+ 				  x->prev->service->servp == x->serv)))
+ 
+ typedef	struct	{
++#ifdef HIGHEST_CONNECTIONS
++	u_long  is_myclnt_max;	/* maximum local clients */
++	u_long	is_user_max;	/* maximum global clients */
++#endif
++#ifdef	EXTRA_STATISTICS
++	time_t	is_last_cnt_t;	/* timestamp for last count */
++	u_long	is_last_cnt;	/* last count */
++	u_long	is_m_users;	/* maximum users connected */
++	u_long	is_m_serv;	/* maximum servers connected */
++	u_long	is_m_service;	/* maximum services connected */
++	u_long	is_m_myclnt;	/* maximum local clients */
++	u_long	is_m_myserv;	/* maximum local servers */
++	u_long	is_m_myservice;	/* maximum local services */
++#endif
+ 	u_long	is_user[2];	/* users, non[0] invis and invis[1] */
+ 	u_long	is_serv;	/* servers */
+ 	u_long	is_service;	/* services */
+@@ -771,8 +789,13 @@
+ #define	SCH_SERVICE	9
+ #define	SCH_DEBUG	10
+ #define	SCH_AUTH	11
+-#define	SCH_MAX		11
+ 
++#ifdef CLIENTS_CHANNEL 
++#define SCH_CLIENTS	12
++#define SCH_MAX 13
++#else
++#define SCH_MAX 12
++#endif
+ /* used for async dns values */
+ 
+ #define	ASYNC_NONE	(-1)
+diff -ur --new-file irc2.10.3p3/common/support.c irc2.10.3p3-hoop/common/support.c
+--- irc2.10.3p3/common/support.c	Thu May 31 16:00:02 2001
++++ irc2.10.3p3-hoop/common/support.c	Mon Oct 22 17:54:58 2001
+@@ -849,7 +849,7 @@
+ char *make_version()
+ {
+ 	int ve, re, mi, dv, pl;
+-	char ver[15];
++	char ver[50];
+ 
+ 	sscanf(PATCHLEVEL, "%2d%2d%2d%2d%2d", &ve, &re, &mi, &dv, &pl);
+ 	/* version & revision */
+@@ -861,6 +861,7 @@
+ 		sprintf(ver + strlen(ver), "%c%d", DEVLEVEL, dv);
+ 	if (pl)	/* patchlevel */
+ 		sprintf(ver + strlen(ver), "p%d", pl);
++	strcat(ver,"+hoop");
+ 	return mystrdup(ver);
+ }
+ 
+diff -ur --new-file irc2.10.3p3/iauth/a_conf.c irc2.10.3p3-hoop/iauth/a_conf.c
+--- irc2.10.3p3/iauth/a_conf.c	Sat Apr  7 02:51:48 2001
++++ irc2.10.3p3-hoop/iauth/a_conf.c	Mon Oct 22 17:54:58 2001
+@@ -26,6 +26,7 @@
+ #define A_CONF_C
+ #include "a_externs.h"
+ #undef A_CONF_C
++#undef USE_DSM
+ 
+ static aModule *Mlist[16];
+ 
+@@ -86,6 +87,7 @@
+ 
+ 	Mlist[Mcnt++] = &Module_rfc931;
+ 	Mlist[Mcnt++] = &Module_socks;
++	Mlist[Mcnt++] = &Module_webproxy;
+ 	Mlist[Mcnt++] = &Module_pipe;
+ 	Mlist[Mcnt++] = &Module_lhex;
+ 	Mlist[Mcnt] = NULL;
+diff -ur --new-file irc2.10.3p3/iauth/a_externs.h irc2.10.3p3-hoop/iauth/a_externs.h
+--- irc2.10.3p3/iauth/a_externs.h	Mon Apr 12 21:45:04 1999
++++ irc2.10.3p3-hoop/iauth/a_externs.h	Mon Oct 22 17:54:58 2001
+@@ -30,5 +30,6 @@
+ 
+ #include "mod_rfc931_ext.h"
+ #include "mod_socks_ext.h"
++#include "mod_webproxy_ext.h"
+ #include "mod_pipe_ext.h"
+ #include "mod_lhex_ext.h"
+diff -ur --new-file irc2.10.3p3/iauth/a_log_def.h irc2.10.3p3-hoop/iauth/a_log_def.h
+--- irc2.10.3p3/iauth/a_log_def.h	Thu Oct 18 21:51:08 2001
++++ irc2.10.3p3-hoop/iauth/a_log_def.h	Mon Oct 22 17:54:58 2001
+@@ -37,5 +37,7 @@
+ #define	ALOG_DSOCKSC	0x040000	/* debug: module socks cache */
+ #define	ALOG_DPIPE	0x080000	/* debug: module pipe */
+ #define	ALOG_DLHEX	0x100000	/* debug: module pipe */
++#define	ALOG_DWEBPROXY 0x200000 /* debug: module webproxy */
++#define	ALOG_DWEBPROXYC 0x400000 /* debug: module webproxy */
+ 
+-#define	ALOG_DALL	0x1F3700	/* any debug flag */
++#define	ALOG_DALL	0x7F3700	/* any debug flag */
+diff -ur --new-file irc2.10.3p3/iauth/mod_webproxy.c irc2.10.3p3-hoop/iauth/mod_webproxy.c
+--- irc2.10.3p3/iauth/mod_webproxy.c	Thu Jan  1 01:00:00 1970
++++ irc2.10.3p3-hoop/iauth/mod_webproxy.c	Mon Oct 22 17:54:58 2001
+@@ -0,0 +1,574 @@
++/************************************************************************
++ *   IRC - Internet Relay Chat, iauth/mod_webproxy.c
++ *   Copyright (C) 2001 Dan Merillat
++ *   
++ *   Original code (iauth/mod_socks.c) is
++ *   Copyright (C) 1998 Christophe Kalt
++ *
++ *   This program is free software; you can redistribute it and/or modify
++ *   it under the terms of the GNU General Public License as published by
++ *   the Free Software Foundation; either version 1, or (at your option)
++ *   any later version.
++ *
++ *   This program is distributed in the hope that it will be useful,
++ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *   GNU General Public License for more details.
++ *
++ *   You should have received a copy of the GNU General Public License
++ *   along with this program; if not, write to the Free Software
++ *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++
++#ifndef lint
++static char rcsid[] =
++"@(#)$Id$";
++#endif
++
++#include "os.h"
++#include "a_defines.h"
++#define MOD_WEBGATE_C
++#include "a_externs.h"
++
++/****************************** PRIVATE *************************************/
++
++#define CACHETIME 30
++
++struct proxylog {
++	struct proxylog *next;
++	char ip[HOSTLEN + 1];
++	u_char state;				/* 0 = no proxy, 1 = open proxy, 2 = closed proxy */
++	time_t expire;
++	u_int port;
++};
++
++#define OPT_LOG			0x001
++#define OPT_DENY    	0x002
++#define OPT_PARANOID	0x004
++#define OPT_CAREFUL 	0x008
++#define OPT_V4ONLY  	0x010
++#define OPT_V5ONLY  	0x020
++#define OPT_PROTOCOL	0x100
++
++#define PROXY_NONE		0
++#define PROXY_OPEN		1
++#define PROXY_CLOSE		2
++#define PROXY_UNEXPECTED	3
++#define PROXY_BADPROTO		4
++
++struct webproxy_private {
++	struct proxylog *cache;
++	u_int lifetime;
++	u_char options;
++	u_int ports[128];
++	u_int portcount;
++	/* stats */
++	u_int chitc, chito, chitn, cmiss, cnow, cmax;
++	u_int open[128], closed, noproxy;
++};
++int webproxy_start(u_int);
++
++/*
++ * webproxy_open_proxy
++ *
++ *  Found an open proxy for cl: deal with it!
++ */
++
++static void 
++webproxy_open_proxy(cl,port)
++int cl;
++u_int port;
++{
++	struct webproxy_private *mydata = cldata[cl].instance->data;
++
++	/* open proxy */
++	if (mydata->options & OPT_DENY) {
++		cldata[cl].state |= A_DENY;
++		sendto_ircd("k %d %s %u ", cl, cldata[cl].itsip,
++					cldata[cl].itsport);
++	}
++	if (mydata->options & OPT_LOG)
++		sendto_log(ALOG_FLOG, LOG_INFO, "webproxy: open proxy: %s[%s], port %u",
++					cldata[cl].host, cldata[cl].itsip,
++				   port);
++}
++
++/*
++ * webproxy_add_cache
++ *
++ *  Add an entry to the cache.
++ */
++
++static void 
++webproxy_add_cache(cl, state)
++int cl, state;
++{
++	struct webproxy_private *mydata = cldata[cl].instance->data;
++	struct proxylog *next;
++
++
++	if (state == PROXY_OPEN) {
++		if (cldata[cl].mod_status < mydata->portcount)
++			mydata->open[cldata[cl].mod_status] += 1;
++			
++	} else if (state == PROXY_NONE)
++		mydata->noproxy += 1;
++	else
++		/* state == PROXY_CLOSE|PROXY_UNEXPECTED|PROXY_BADPROTO */ 
++		mydata->closed += 1;
++
++	if (mydata->lifetime == 0)
++		return;
++
++	mydata->cnow += 1;
++	if (mydata->cnow > mydata->cmax)
++		mydata->cmax = mydata->cnow;
++
++	next = mydata->cache;
++	mydata->cache = (struct proxylog *) malloc(sizeof(struct proxylog));
++	mydata->cache->expire = time(NULL) + mydata->lifetime;
++	strcpy(mydata->cache->ip, cldata[cl].itsip);
++	mydata->cache->port = mydata->ports[cldata[cl].mod_status];
++	mydata->cache->state = state;
++	mydata->cache->next = next;
++	DebugLog(
++				(ALOG_DWEBPROXYC, 0,
++				 "webproxy_add_cache(%d): new cache %s, open=%d", cl,
++				 mydata->cache->ip, state));
++}
++
++/*
++ * webproxy_check_cache
++ *
++ *  Check cache for an entry.
++ */
++static int 
++webproxy_check_cache(cl)
++{
++	struct webproxy_private *mydata = cldata[cl].instance->data;
++	struct proxylog **last, *pl;
++	time_t now = time(NULL);
++
++	if (!mydata || mydata->lifetime == 0)
++		return 0;
++
++	DebugLog(
++				(ALOG_DWEBPROXYC, 0,
++				 "webproxy_check_cache(%d): Checking cache for %s", cl,
++				 cldata[cl].itsip));
++
++	last = &(mydata->cache);
++	while ((pl = *last)) {
++		DebugLog((ALOG_DWEBPROXYC, 0, "webproxy_check_cache(%d): cache %s",
++				  cl, pl->ip));
++		if (pl->expire < now) {
++			DebugLog((ALOG_DWEBPROXYC, 0,
++					  "webproxy_check_cache(%d): free %s (%d < %d)",
++					  cl, pl->ip, pl->expire, now));
++			*last = pl->next;
++			free(pl);
++			mydata->cnow -= 1;
++			continue;
++		}
++		if (!strcasecmp(pl->ip, cldata[cl].itsip)) {
++			DebugLog((ALOG_DWEBPROXYC, 0,
++					  "webproxy_check_cache(%d): match (%u)", cl,
++					  pl->state));
++			pl->expire = now + mydata->lifetime;	/* dubious */
++			if (pl->state == 1) {
++				webproxy_open_proxy(cl,pl->port);
++				mydata->chito += 1;
++			} else if (pl->state == 0)
++				mydata->chitn += 1;
++			else
++				mydata->chitc += 1;
++			return -1;
++		}
++		last = &(pl->next);
++	}
++	mydata->cmiss += 1;
++	return 0;
++}
++
++static int 
++webproxy_write(u_int cl)
++{
++
++	struct webproxy_private *mydata = cldata[cl].instance->data;
++	static u_char query[64];	/* big enough to hold all queries */
++	static int query_len;	/* lenght of socks4 query */
++	static int wlen;
++
++
++
++	query_len=snprintf(query, 64, "CONNECT %s:%d HTTP/1.0\n\n",
++			 cldata[cl].ourip, cldata[cl].ourport);
++
++	DebugLog((ALOG_DWEBPROXY, 0, "webproxy_write(%d): Checking %s:%u",
++			  cl, cldata[cl].itsip, mydata->ports[cldata[cl].mod_status]));
++	if ((wlen=write(cldata[cl].wfd, query, query_len)) != query_len) {
++		/* most likely the connection failed */
++		DebugLog(
++					(ALOG_DWEBPROXY, 0,
++				  "webproxy_write(%d): write() failed: %d %s", cl,
++					 wlen, strerror(errno)));
++		close(cldata[cl].wfd);
++		cldata[cl].rfd = cldata[cl].wfd = 0;
++		cldata[cl].buflen=0;
++		if (++cldata[cl].mod_status < mydata->portcount)
++			return webproxy_start(cl);
++		else
++			return 1;
++	}
++	cldata[cl].rfd = cldata[cl].wfd;
++	cldata[cl].wfd = 0;
++	return 0;
++}
++
++static int 
++webproxy_read(u_int cl)
++{
++	/* Looking for "Connection established"
++	 * HTTP/1.0 200 Connection established" */
++
++	struct webproxy_private *mydata = cldata[cl].instance->data;
++	int again = 1;
++	u_char state = PROXY_CLOSE;
++	char  * lookfor="HTTP/1.0 200";
++	u_int looklen=strlen(lookfor);
++
++	/* data's in from the other end */
++	if (cldata[cl].buflen < looklen)
++		return 0;
++	
++	/* zero it out so the debug log is sane */
++	cldata[cl].inbuffer[cldata[cl].buflen]=0;
++
++	/* got all we need */
++	DebugLog(
++				(ALOG_DWEBPROXY, 0, "webproxy_read(%d): %d Got [%s]",
++			cl, mydata->ports[cldata[cl].mod_status], cldata[cl].inbuffer));
++
++
++	if (!strncmp(cldata[cl].inbuffer, lookfor, looklen) ||
++	    !strncmp(cldata[cl].inbuffer, "HTTP/1.1 200",looklen)
++			)  { /* got it! */
++		DebugLog((ALOG_DWEBPROXY, 0, "webproxy_read(%d): Open proxy on %s:%u",
++				cl, cldata[cl].itsip, mydata->ports[cldata[cl].mod_status]));
++		state = PROXY_OPEN;
++		webproxy_open_proxy(cl,mydata->ports[cldata[cl].mod_status]);
++		again = 0;
++	}
++
++	cldata[cl].mod_status++;
++	close(cldata[cl].rfd);
++	cldata[cl].rfd = 0;
++
++	if (again && cldata[cl].mod_status < mydata->portcount) {
++		cldata[cl].buflen = 0;
++		return webproxy_start(cl);
++	}
++	else {
++		webproxy_add_cache(cl, state);
++		return -1;
++	}
++	return 0;
++}
++
++/******************************** PUBLIC ************************************/
++
++/*
++ * webproxy_init
++ *
++ *  This procedure is called when a particular module is loaded.
++ *  Returns NULL if everything went fine,
++ *  an error message otherwise.
++ */
++
++char *
++webproxy_init(AnInstance * self)
++{
++	struct webproxy_private *mydata;
++	char tmpbuf[80], cbuf[32];
++	static char txtbuf[80];
++	u_int portcount = 0;
++	
++	tmpbuf[0] = txtbuf[0] = '\0';
++
++	mydata = 
++		(struct webproxy_private *)
++		malloc(sizeof(struct webproxy_private));
++	bzero((char *) mydata, sizeof(struct webproxy_private));
++	mydata->cache = NULL;
++	mydata->lifetime = CACHETIME;
++	if (!self->opt)
++	{
++		/* using default config:
++		** log,deny,ports=3128;8080 
++		*/
++		mydata->options=OPT_DENY|OPT_LOG;
++		mydata->ports[portcount++] = 3128;
++		mydata->ports[portcount++] = 8080;
++		mydata->portcount=portcount;
++		strcat(tmpbuf, ",log");
++		strcat(txtbuf, ", Log");
++		strcat(tmpbuf, ",reject");
++		strcat(txtbuf, ", Reject");
++		strcat(tmpbuf, ",ports=3128;8080");
++		strcat(txtbuf, ", Ports=3128;8080");
++
++	}
++	else
++	{
++
++		char *ch = NULL, *portsp = NULL;
++	
++		if ((portsp=strstr(self->opt, "ports"))) 
++
++		{
++			char xbuf[128];
++			char *c;
++			size_t slen;
++			bzero(xbuf,sizeof(xbuf));
++			ch = strchr(portsp, '=');
++			if (!ch)
++			{
++				mydata->ports[portcount++] = 3128;
++				mydata->ports[portcount++] = 8080;
++				mydata->portcount=portcount;
++			}
++			else
++			{
++				c=index(ch, ',');
++				if (!c)
++				   c=ch+strlen(ch);
++			/* now ch is at = and c is at the end of the ports line */
++				ch++;
++				slen = (size_t) c - (size_t) ch;
++				if (slen > 30)
++				{
++					slen = 30;
++				}
++				memcpy(xbuf, ch, slen);
++				strcat(tmpbuf,",ports=");
++
++				strcat(tmpbuf,xbuf);
++				ch=xbuf;
++				while((c=index(ch, ';'))) {
++				   *c=0;
++				   mydata->ports[portcount++]=atoi(ch);
++				   ch=c+1;
++				}
++				mydata->ports[portcount++]=atoi(ch);
++				mydata->portcount=portcount;
++			}
++		}
++		if (strstr(self->opt, "log")) {
++			mydata->options |= OPT_LOG;
++			strcat(tmpbuf, ",log");
++			strcat(txtbuf, ", Log");
++		}
++		if (strstr(self->opt, "reject")) {
++			mydata->options |= OPT_DENY;
++			strcat(tmpbuf, ",reject");
++			strcat(txtbuf, ", Reject");
++		}
++		if (strstr(self->opt, "cache")) {
++			char *ch = index(self->opt, '=');
++
++			if (ch)
++				mydata->lifetime = atoi(ch + 1);
++		}
++	}	
++	sprintf(cbuf, ",cache=%d", mydata->lifetime);
++	strcat(tmpbuf, cbuf);
++	sprintf(cbuf, ", Cache %d (min)", mydata->lifetime);
++	strcat(txtbuf, cbuf);
++	mydata->lifetime *= 60;
++
++	self->popt = mystrdup(tmpbuf + 1);
++	self->data = mydata;
++	return txtbuf + 2;
++}
++
++/*
++ * webproxy_release
++ *
++ *  This procedure is called when a particular module is unloaded.
++ */
++void 
++webproxy_release(self)
++AnInstance *self;
++{
++	struct webproxy_private *mydata = self->data;
++	free(mydata->open);
++	free(mydata);
++	free(self->popt);
++}
++
++/*
++ * webproxy_stats
++ *
++ *  This procedure is called regularly to update statistics sent to ircd.
++ */
++void 
++webproxy_stats(self)
++AnInstance *self;
++{
++	struct webproxy_private *mydata = self->data;
++	char mybuf[256];
++	int len;
++	int i;
++
++	len=snprintf(mybuf, 256, "S webproxy port:open");
++	for (i=0;i<mydata->portcount;i++)
++		len+=snprintf(mybuf+len, 256-len, " %u:%u", 
++				mydata->ports[i], mydata->open[i]);
++
++	len+=snprintf(mybuf+len, 256-len, " closed %u noproxy %u",
++			mydata->closed, mydata->noproxy);
++
++	sendto_ircd(mybuf);
++
++	sendto_ircd
++		("S webproxy cache open %u closed %u noproxy %u miss %u (%u <= %u)",
++		 mydata->chito, mydata->chitc, mydata->chitn, mydata->cmiss,
++		 mydata->cnow, mydata->cmax);
++}
++
++/*
++ * webproxy_start
++ *
++ *  This procedure is called to start the socks check procedure.
++ *  Returns 0 if everything went fine,
++ *  -1 otherwise (nothing to be done, or failure)
++ *
++ *  It is responsible for sending error messages where appropriate.
++ *  In case of failure, it's responsible for cleaning up (e.g. webproxy_clean
++ *  will NOT be called)
++ */
++int 
++webproxy_start(cl)
++u_int cl;
++{
++
++	struct webproxy_private *mydata = cldata[cl].instance->data;
++	char *error;
++	int fd;
++
++	if (cldata[cl].state & A_DENY) {
++		/* no point of doing anything */
++		DebugLog((ALOG_DWEBPROXY, 0,
++				  "webproxy_start(%d): A_DENY alredy set ", cl));
++		return -1;
++	}
++	if (cldata[cl].mod_status == 0)
++		if (webproxy_check_cache(cl))
++			return -1;
++
++	if (strchr(cldata[cl].itsip,':'))
++		return -1;
++
++	while (cldata[cl].mod_status < mydata->portcount) {
++		DebugLog(
++				  (ALOG_DWEBPROXY, 0, "webproxy_start(%d): Connecting to %s:%u",
++				   cl, cldata[cl].itsip, mydata->ports[cldata[cl].mod_status]));
++		fd = tcp_connect(cldata[cl].ourip, cldata[cl].itsip, 
++					mydata->ports[cldata[cl].mod_status],
++					&error);
++		if (fd > 0) {
++						/*so that webproxy_work() is called when connected */
++			cldata[cl].wfd = fd;		
++			return 0;
++		}
++		DebugLog((ALOG_DWEBPROXY, 0,
++			  "webproxy_start(%d): tcp_connect() reported %s", cl,
++			  error));
++		cldata[cl].mod_status++;
++		continue;
++		
++	}
++
++	return -1;
++}
++
++/*
++ * webproxy_work
++ *
++ *  This procedure is called whenever there's new data in the buffer.
++ *  Returns 0 if everything went fine, and there is more work to be done,
++ *  Returns -1 if the module has finished its work (and cleaned up).
++ *
++ *  It is responsible for sending error messages where appropriate.
++ */
++int 
++webproxy_work(cl)
++u_int cl;
++{
++	struct webproxy_private *mydata = cldata[cl].instance->data;
++
++	if (!mydata)
++		return -1;
++
++	DebugLog(
++			  (ALOG_DWEBPROXY, 0, "webproxy_work(%d): %d %d %d buflen=%d",
++			   cl, mydata->ports[cldata[cl].mod_status],
++				cldata[cl].rfd, cldata[cl].wfd,
++			   cldata[cl].buflen));
++
++	if (cldata[cl].wfd > 0)
++		/*
++		   ** We haven't sent the query yet, the connection was just
++		   ** established.
++		 */
++		return webproxy_write(cl);
++	else
++		return webproxy_read(cl);
++}
++
++/*
++ * webproxy_clean
++ *
++ *  This procedure is called whenever the module should interrupt its work.
++ *  It is responsible for cleaning up any allocated data, and in particular
++ *  closing file descriptors.
++ */
++void 
++webproxy_clean(cl)
++u_int cl;
++{
++	DebugLog((ALOG_DWEBPROXY, 0, "webproxy_clean(%d): cleaning up", cl));
++	/*
++	   ** only one of rfd and wfd may be set at the same time,
++	   ** in any case, they would be the same fd, so only close() once
++	 */
++	if (cldata[cl].rfd)
++		close(cldata[cl].rfd);
++	else if (cldata[cl].wfd)
++		close(cldata[cl].wfd);
++	cldata[cl].rfd = cldata[cl].wfd = 0;
++}
++
++/*
++ * webproxy_timeout
++ *
++ *  This procedure is called whenever the timeout set by the module is
++ *  reached.
++ *
++ *  Returns 0 if things are okay, -1 if check was aborted.
++ */
++int 
++webproxy_timeout(cl)
++u_int cl;
++{
++	DebugLog(
++				(ALOG_DWEBPROXY, 0,
++				 "webproxy_timeout(%d): calling webproxy_clean ", cl));
++	webproxy_clean(cl);
++	return -1;
++}
++
++aModule Module_webproxy =
++{"webproxy", webproxy_init, webproxy_release, webproxy_stats,
++ webproxy_start, webproxy_work, webproxy_timeout, webproxy_clean
++};
+diff -ur --new-file irc2.10.3p3/iauth/mod_webproxy_ext.h irc2.10.3p3-hoop/iauth/mod_webproxy_ext.h
+--- irc2.10.3p3/iauth/mod_webproxy_ext.h	Thu Jan  1 01:00:00 1970
++++ irc2.10.3p3-hoop/iauth/mod_webproxy_ext.h	Mon Oct 22 17:54:58 2001
+@@ -0,0 +1,3 @@
++#ifndef MOD_WEBPROXY_C
++extern aModule Module_webproxy;
++#endif /* MOD_WEBPROXY_C */
+diff -ur --new-file irc2.10.3p3/ircd/channel.c irc2.10.3p3-hoop/ircd/channel.c
+--- irc2.10.3p3/ircd/channel.c	Sat Jul  7 16:29:33 2001
++++ irc2.10.3p3-hoop/ircd/channel.c	Mon Oct 22 17:54:58 2001
+@@ -611,6 +611,13 @@
+ 	add_user_to_channel(chptr, mp, CHFL_CHANOP);
+ 	chptr->mode.mode = smode|MODE_SECRET;
+ 
++#ifdef  CLIENTS_CHANNEL
++	chptr = get_channel(mp, "&CLIENTS", CREATE);
++	strcpy(chptr->topic,"SERVER MESSAGES: client activities [various]");
++	add_user_to_channel(chptr, mp, CHFL_CHANOP);
++	chptr->mode.mode = smode|MODE_SECRET;
++#endif
++
+ 	setup_svchans();
+ }
+ 
+@@ -1004,6 +1011,7 @@
+ 	aClient *who;
+ 	Mode	*mode, oldm;
+ 	Link	*plp = NULL;
++	char  buf[KEYLEN+1];
+ 	int	compat = -1; /* to prevent mixing old/new modes */
+ 
+ 	*mbuf = *pbuf = '\0';
+@@ -1166,8 +1174,17 @@
+ 			break;
+ 		case 'k':
+ 			*penalty += 1;
+-			if (--parc <= 0)
+-				break;
++			if (--parc <= 0) {  /* a channel key query --fiction */
++          		  *(curr+1) = '\0'; /* Stop MODE # bb.. */
++			  if ((*chptr->mode.key) && IsMember(sptr, chptr)) { 
++				strncpy(buf, chptr->mode.key, KEYLEN); 
++			  } 			   
++			  else { *buf = '\0'; };
++			  
++			  sendto_one(sptr, rpl_str(RPL_CHANNELMODEIS, sptr->name),
++  	                         chptr->chname, (*chptr->mode.key) ? "+k" : "+", buf);
++  	                  break;       
++			}
+ 			parv++;
+ 			/* check now so we eat the parameter if present */
+ 			if (keychange)
+@@ -1366,7 +1383,33 @@
+ 			 * limit 'l' to only *1* change per mode command but
+ 			 * eat up others.
+ 			 */
+-			if (limitset || !ischop)
++                  
++			/* channel limit query ("mode -l" is an exception to also unset limit 
++			 * without extra parameter). To not break stuff. --fiction 
++			 */
++                  
++			if ((parc-1 <= 0) && (whatt != MODE_DEL)) { 
++      	         	   *(curr+1) = '\0';  /* Stop MODE # bb.. */
++			   if ((chptr->mode.limit) && IsMember(sptr, chptr)) {
++				 SPRINTF(buf, "%d", chptr->mode.limit);
++			   } 
++			   else { *buf = '\0'; };
++
++			   sendto_one(sptr, rpl_str(RPL_CHANNELMODEIS, sptr->name),
++  		                    chptr->chname, (chptr->mode.limit) ? "+l" : "+" , buf);
++  		           break;         
++        		}
++			
++			/* just pretend that there was a mode change to be able to 
++			 * return an error later --fiction
++			 */                  
++
++			if (!ischop) {
++			   count++; 
++			   break;			
++			}
++
++			if (limitset)
+ 			    {
+ 				if (whatt == MODE_ADD && --parc > 0)
+ 					parv++;
+@@ -1398,9 +1441,14 @@
+ 				*penalty += 2;
+ 				break;
+ 			    }
+-			sendto_one(cptr, err_str(ERR_NEEDMOREPARAMS,
+-				   cptr->name), "MODE +l");
+-			break;
++/*		sendto_one(cptr, err_str(ERR_NEEDMOREPARAMS,
++		   	     cptr->name), "MODE +l");
++		break;  
++
++Obosleted by new syntax - "mode +l" or just 
++"mode l" gives current limit  --fiction
++*/ 
++
+ 		case 'i' : /* falls through for default case */
+ 			if (whatt == MODE_DEL && ischop)
+ 				while ((lp = chptr->invites))
+@@ -1469,6 +1517,7 @@
+ 			break;
+ 		}
+ 		curr++;
++
+ 		/*
+ 		 * Make sure modes strings such as "+m +t +p +i" are parsed
+ 		 * fully.
+@@ -1761,6 +1810,12 @@
+ 		else if (lp == NULL)
+ 			return (ERR_BANNEDFROMCHAN);
+ 
++#ifdef CLIENTS_CHANNEL
++	if (chptr->chname[0]=='&') {
++		if (!strcmp(chptr->chname,"&CLIENTS") && !IsAnOper(sptr))
++		return (ERR_INVITEONLYCHAN);
++	}
++#endif  
+ 	if ((chptr->mode.mode & MODE_INVITEONLY)
+ 	    && !match_modeid(CHFL_INVITE, sptr, chptr)
+ 	    && (lp == NULL))
+@@ -2003,6 +2058,9 @@
+ 	Reg	char	*name, *key = NULL;
+ 	int	i, flags = 0;
+ 	char	*p = NULL, *p2 = NULL, *s, chop[5];
++#ifdef MIN_CHANOP_SERV
++	unsigned long lus_cnt;
++#endif
+ 
+ 	if (parc < 2 || *parv[1] == '\0')
+ 	    {
+@@ -2226,11 +2284,35 @@
+ 		** channel so make them (rightfully) the Channel
+ 		** Operator.
+ 		*/
++		/* do not make them Channel Operator if the server seems
++		** to be splitted (i.e. if total server count is less
++		** than a given number and channel count is less
++		** than another given number or user count is
++		** less than a third number. (francesco)
++		*/
+ 		flags = 0;
+ 		chop[0] = '\0';
+-		if (MyConnect(sptr) && UseModes(name) &&
+-		    (!IsRestricted(sptr) || (*name == '&')) && !chptr->users &&
+-		    !(chptr->history && *chptr->chname == '!'))
++#ifdef MIN_CHANOP_SERV
++                lus_cnt = istat.is_user[0] + istat.is_user[1];
++                if (MyConnect(sptr) && UseModes(name) &&
++                        (((istat.is_serv>MIN_CHANOP_SERV)&&
++                        (istat.is_chan>MIN_CHANOP_CHAN) &&
++                        (lus_cnt>MIN_CHANOP_USR))||(*name != '#'))  &&
++#else
++		if (
++			MyConnect(sptr) &&
++			UseModes(name) && 
++#endif
++		    (
++			 !IsRestricted(sptr) ||
++			 (*name == '&')
++			) &&
++			!chptr->users &&
++		    !(
++			 chptr->history &&
++			 *chptr->chname == '!'
++		    )
++		   )
+ 		    {
+ 			if (*name == '!')
+ 				strcpy(chop, "\007O");
+@@ -2287,8 +2369,16 @@
+ 		    {
+ 			del_invite(sptr, chptr);
+ 			if (chptr->topic[0] != '\0')
++			{
+ 				sendto_one(sptr, rpl_str(RPL_TOPIC, parv[0]),
+ 					   name, chptr->topic);
++#ifdef TOPICWHOTIME
++				if (chptr->topic_time>0)
++					sendto_one(sptr, rpl_str(RPL_TOPICWHOTIME, parv[0]),
++						name, chptr->topic_nuh,
++						chptr->topic_time);
++#endif
++			}
+ 			parv[1] = name;
+ 			(void)m_names(cptr, sptr, 2, parv);
+ 			if (IsAnonymous(chptr) && !IsQuiet(chptr))
+@@ -2546,9 +2636,9 @@
+ 				   name);
+ 			continue;
+ 		    }
+-		comment = (BadPtr(parv[2])) ? parv[0] : parv[2];
++		comment = (BadPtr(parv[2])) ? "" : parv[2];
+ 		if (IsAnonymous(chptr) && (comment == parv[0]))
+-			comment = "None";
++			comment = "";
+ 		if (strlen(comment) > (size_t) TOPICLEN)
+ 			comment[TOPICLEN] = '\0';
+ 
+@@ -2603,7 +2693,7 @@
+ 	if (IsServer(sptr))
+ 		sendto_flag(SCH_NOTICE, "KICK from %s for %s %s",
+ 			    parv[0], parv[1], parv[2]);
+-	comment = (BadPtr(parv[3])) ? parv[0] : parv[3];
++	comment = (BadPtr(parv[3])) ? "" : parv[3];
+ 	if (strlen(comment) > (size_t) TOPICLEN)
+ 		comment[TOPICLEN] = '\0';
+ 
+@@ -2781,14 +2871,28 @@
+ 			if (chptr->topic[0] == '\0')
+ 				sendto_one(sptr, rpl_str(RPL_NOTOPIC, parv[0]),
+ 					   chptr->chname);
+-			else
++			else {
+ 				sendto_one(sptr, rpl_str(RPL_TOPIC, parv[0]),
+ 					   chptr->chname, chptr->topic);
++#ifdef TOPICWHOTIME
++				sendto_one(sptr, rpl_str(RPL_TOPICWHOTIME, parv[0]),
++					chptr->chname, chptr->topic_nuh,
++					chptr->topic_time);
++#endif
++			}
+ 		    } 
+ 		else if ((chptr->mode.mode & MODE_TOPICLIMIT) == 0 ||
+ 			 is_chan_op(sptr, chptr))
+ 		    {	/* setting a topic */
+ 			strncpyzt(chptr->topic, topic, sizeof(chptr->topic));
++#ifdef TOPICWHOTIME
++			strcpy(chptr->topic_nuh, sptr->name);
++			strcat(chptr->topic_nuh, "!");
++			strcat(chptr->topic_nuh, sptr->user->username);
++			strcat(chptr->topic_nuh, "@");
++			strcat(chptr->topic_nuh, sptr->user->host);
++			chptr->topic_time = timeofday;
++#endif
+ 			sendto_match_servs(chptr, cptr,":%s TOPIC %s :%s",
+ 					   parv[0], chptr->chname,
+ 					   chptr->topic);
+@@ -2919,6 +3023,13 @@
+ 	    hunt_server(cptr, sptr, ":%s LIST %s %s", 2, parc, parv))
+ 		return 10;
+ 	if (BadPtr(parv[1]))
++	{
++#ifdef LIST_ALIS_NOTE
++		if (MyConnect(sptr))
++		{
++			sendto_one(sptr,":%s NOTICE %s : Using LIST command for listing all channels is not recommended. Try \"/squery alis help\" instead",ME,parv[0]);
++		}
++#endif
+ 		for (chptr = channel; chptr; chptr = chptr->nextch)
+ 		    {
+ 			if (!sptr->user ||
+@@ -2932,6 +3043,7 @@
+ 			if (!MyConnect(sptr) && rlen > CHREPLLEN)
+ 				break;
+ 		    }
++    }
+ 	else {
+ 		parv[1] = canonize(parv[1]);
+ 		for (; (name = strtoken(&p, parv[1], ",")); parv[1] = NULL)
+@@ -3408,7 +3520,11 @@
+ 		if (curh_nb == 0)
+ 		    {
+ #ifdef	DEBUGMODE
++#ifdef LOCAL_REJECTIONS_ONLY
++			sendto_flag(SCH_NOTICE,
++#else
+ 			sendto_flag(SCH_LOCAL,
++#endif
+ 		       "Channel garbage: live %u (max %u), hist %u (extended)",
+ 				    cur_nb - 1, max_nb - 1, curh_nb);
+ #endif
+@@ -3445,7 +3561,11 @@
+ 	    }
+ 
+ #ifdef	DEBUGMODE
++#ifdef LOCAL_REJECTIONS_ONLY
++	sendto_flag(SCH_NOTICE,
++#else
+ 	sendto_flag(SCH_LOCAL,
++#endif
+ 		   "Channel garbage: live %u (max %u), hist %u (removed %u)%s",
+ 		    cur_nb - 1, max_nb - 1, curh_nb, del - istat.is_hchan,
+ 		    (split) ? " split detected" : "");
+diff -ur --new-file irc2.10.3p3/ircd/ircd.c irc2.10.3p3-hoop/ircd/ircd.c
+--- irc2.10.3p3/ircd/ircd.c	Sun May  6 15:42:30 2001
++++ irc2.10.3p3-hoop/ircd/ircd.c	Mon Oct 22 17:54:58 2001
+@@ -33,6 +33,11 @@
+ 
+ static	void	open_debugfile(), setup_signals(), io_loop();
+ 
++#if defined(OPER_KLINE)  || defined(LOCOP_KLINE) || \
++    defined(OPER_TKLINE) || defined(LOCOP_TKLINE)
++int	kline_added = 0;
++#endif
++
+ istat_t	istat;
+ char	**myargv;
+ int	rehashed = 0;
+@@ -339,6 +344,54 @@
+ }
+ 
+ 
++#if defined(OPER_KLINE) || defined(LOCOP_KLINE) || \
++   defined(OPER_TKLINE) || defined(LOCOP_TKLINE)
++void	check_klines(void)
++{
++	Reg aClient	*cptr;
++	int		kflag, i;
++	char		*reason;
++
++	kline_added=0;
++
++	for (i = highest_fd ; i>=0; i--)       
++	    {
++
++		if (!(cptr = local[i]) || IsListening(cptr) || IsLog(cptr) ||
++		    IsHeld(cptr))
++			continue;
++
++		if ( IsPerson(cptr) )
++		    {
++			kflag = find_kill(cptr, 1, &reason);
++		    }
++		else
++		   {
++			kflag = 0;
++			reason = NULL;
++		   }
++
++		if (kflag && IsPerson(cptr))
++		    {
++			char buf[100];
++
++			sendto_flag(SCH_NOTICE,
++				    "Kill line active for %s",
++				    get_client_name(cptr, FALSE));
++			cptr->exitc = EXITC_KLINE;
++			if (reason)
++				sprintf(buf, "Kill line active: %.80s",
++					reason);
++			(void)exit_client(cptr, cptr, &me, (reason) ?
++					  buf : "Kill line active");
++		    }
++	    }
++
++	return;
++}
++#endif
++
++
+ static	time_t	check_pings(currenttime)
+ time_t	currenttime;
+ {
+@@ -1065,6 +1118,12 @@
+ 		nextping = check_pings(timeofday);
+ 		rehashed = 0;
+ 	    }
++
++#if defined(OPER_KLINE)  || defined(LOCOP_KLINE) || \
++    defined(OPER_TKLINE) || defined(LOCOP_TKLINE)
++	if (kline_added)
++		check_klines();
++#endif
+ 
+ 	if (dorestart)
+ 		restart("Caught SIGINT");
+diff -ur --new-file irc2.10.3p3/ircd/res_init.c irc2.10.3p3-hoop/ircd/res_init.c
+--- irc2.10.3p3/ircd/res_init.c	Wed Nov  3 23:00:00 1999
++++ irc2.10.3p3-hoop/ircd/res_init.c	Mon Oct 22 17:55:00 2001
+@@ -531,6 +531,8 @@
+ 			     n++) {
+ 			     /* duplicate up to MAXDNSRCH servers */
+ 			     char *cp = nl.ni_namelist_val[n];
++			     if (ircd_res.dnsrch[n])
++			        free(ircd_res.dnsrch[n]);
+ 			    ircd_res.dnsrch[n] =
+ 				strcpy((char *)malloc(strlen(cp) + 1), cp);
+ 			}
+diff -ur --new-file irc2.10.3p3/ircd/s_conf.c irc2.10.3p3-hoop/ircd/s_conf.c
+--- irc2.10.3p3/ircd/s_conf.c	Fri Jul  6 00:08:58 2001
++++ irc2.10.3p3-hoop/ircd/s_conf.c	Mon Oct 22 17:55:00 2001
+@@ -844,6 +844,9 @@
+ 	read_motd(IRCDMOTD_PATH);
+ #endif
+ 	rehashed = 1;
++	sendto_flag(SCH_NOTICE,
++		    "Reloading resolver configuration");
++	ircd_res_init();
+ 	return ret;
+ }
+ 
+diff -ur --new-file irc2.10.3p3/ircd/s_debug.c irc2.10.3p3-hoop/ircd/s_debug.c
+--- irc2.10.3p3/ircd/s_debug.c	Fri Oct 19 20:44:27 2001
++++ irc2.10.3p3-hoop/ircd/s_debug.c	Mon Oct 22 17:55:00 2001
+@@ -36,6 +36,9 @@
+ #ifndef	NO_IDENT
+ 'a',
+ #endif
++#ifdef MIN_CHANOP_SERV
++'B',
++#endif
+ #ifdef	CHROOTDIR
+ 'c',
+ #endif
+@@ -88,6 +91,9 @@
+ 'K',
+ # endif
+ #endif
++#ifdef FAILED_OPERLOG
++'l',
++#endif
+ #ifdef	LEAST_IDLE
+ 'L',
+ #endif
+@@ -123,6 +129,9 @@
+ #endif
+ #ifdef	OPER_REMOTE
+ 't',
++#ifdef TOPICWHOTIME
++'T',
++#endif
+ #endif
+ #ifndef	NO_PREFIX
+ 'u',
+@@ -150,6 +159,74 @@
+ #endif
+ '\0'};
+ 
++/*
++ * Option string.  Must be before #ifdef DEBUGMODE.
++ * spaces are not allowed.
++ */
++char	cropts[] = {
++#ifdef EXTRA_STATISTICS
++'E',
++#endif
++#ifdef OPER_KLINE
++'K',
++#endif
++#ifdef LOCOP_KLINE
++'k',
++#endif
++#ifdef OPER_TKLINE
++'T',
++#endif
++#ifdef LOCOP_TKLINE
++'t',
++#endif
++#ifdef RESTRICT_USERNAMES
++'u',
++#endif
++'\0'};
++
++char   flopts[] = {
++#ifdef CLIENTS_CHANNEL
++'C',
++#endif
++'\0'};
++
++char	scopts[] = {
++#ifdef HIGHEST_CONNECTIONS
++'C',
++#endif
++#ifdef FAILED_OPER_NOTICE
++'f',
++#endif
++#ifdef OPER_KLINE
++# ifdef LOCOP_KLINE
++'K',
++# else
++'k',
++# endif
++#endif
++#ifdef LOCAL_REJECTIONS_ONLY
++'r',
++#endif
++#ifdef TOPICWHOTIME
++'t',
++#endif
++'\0' };
++
++char jvopts[] = {
++#ifdef RESTRICT_RESTRICTED
++'R',
++#endif
++#ifdef STATS_F
++'F',
++#endif
++#ifdef WHOIS_SIGNON_TIME
++'s',
++#endif
++#ifdef NO_OPER_TRYAGAIN
++'N',
++#endif
++'\0'
++};
+ #ifdef DEBUGMODE
+ static	char	debugbuf[2*READBUF_SIZE]; /* needs to be big.. */
+ 
+@@ -358,6 +435,28 @@
+ 		   -1, -1
+ #endif
+ 		   );
++	sendto_one(cptr, ":%s %d %s :Sc:%s", ME, RPL_STATSDEFINE, nick,
++					scopts);
++#ifdef  EXTRA_STATISTICS
++	sendto_one(cptr, ":%s %d %s :Cr:%s %d/%d/%d/%d/%d/%d",
++		   ME, RPL_STATSDEFINE, nick, cropts,
++		   istat.is_m_users, istat.is_m_myclnt,
++		   istat.is_m_service, istat.is_m_myservice,
++		   istat.is_m_serv, istat.is_m_myserv);
++#else
++	sendto_one(cptr, ":%s %d %s :Cr:%s",
++		   ME, RPL_STATSDEFINE, nick, cropts);
++#endif
++	sendto_one(cptr, ":%s %d %s :jv:%s",
++		   ME, RPL_STATSDEFINE,nick,jvopts);
++	sendto_one(cptr,":%s %d %s :MCHS:%d MCHC:%d MCHU:%d",
++		   ME, RPL_STATSDEFINE, nick, 
++#ifdef MIN_CHANOP_SERV
++		MIN_CHANOP_SERV, MIN_CHANOP_CHAN, MIN_CHANOP_USR
++#else		
++		-1,-1,-1
++#endif
++		);
+ }
+ 
+ void	count_memory(cptr, nick, debug)
+diff -ur --new-file irc2.10.3p3/ircd/s_err.c irc2.10.3p3-hoop/ircd/s_err.c
+--- irc2.10.3p3/ircd/s_err.c	Sat Feb 10 20:11:06 2001
++++ irc2.10.3p3-hoop/ircd/s_err.c	Mon Oct 22 17:55:00 2001
+@@ -183,7 +183,11 @@
+ /* 314 */	{ RPL_WHOWASUSER, "%s %s %s * :%s" },
+ /* 315 */	{ RPL_ENDOFWHO, "%s :End of WHO list." },
+ /* 316 */	{ RPL_WHOISCHANOP, (char *)NULL },
++#ifdef WHOIS_SIGNON_TIME
++/* 317 */	{ RPL_WHOISIDLE, "%s %ld %ld :seconds idle, signon time" },
++#else
+ /* 317 */	{ RPL_WHOISIDLE, "%s %ld :seconds idle" },
++#endif
+ /* 318 */	{ RPL_ENDOFWHOIS, "%s :End of WHOIS list." },
+ /* 319 */	{ RPL_WHOISCHANNELS, "%s :%s" },
+ 		{ 0, (char *)NULL },
+@@ -199,7 +203,11 @@
+ 		{ 0, (char *)NULL },
+ /* 331 */	{ RPL_NOTOPIC, "%s :No topic is set." },
+ /* 332 */	{ RPL_TOPIC, "%s :%s" },
++#ifdef TOPICWHOTIME
++/* 333 */	{ RPL_TOPICWHOTIME, "%s %s %lu" },
++#else
+ 		{ 0, (char *)NULL },
++#endif
+ 		{ 0, (char *)NULL },
+ 		{ 0, (char *)NULL },
+ 		{ 0, (char *)NULL },
+@@ -247,7 +255,8 @@
+ 		{ 0, (char *)NULL },
+ 		{ 0, (char *)NULL },
+ 		{ 0, (char *)NULL },
+-/* 381 */	{ RPL_YOUREOPER, ":You are now an IRC Operator" },
++/* 381 */	{ RPL_YOUREOPER, ":You are now known as an IRC supermouse\
++ ~(,,^>." },
+ /* 382 */	{ RPL_REHASHING, "%s :Rehashing" },
+ /* 383 */	{ RPL_YOURESERVICE, ":You are service %s" },
+ /* 384 */	{ RPL_MYPORTIS, "%d :Port to local server is\r\n" },
+@@ -338,7 +347,13 @@
+ /* 261 */	{ RPL_TRACELOG, "File %s %d" },
+ /* 262 */	{ RPL_TRACEEND, "%s %s.%s :End of TRACE" },
+ /* 263 */	{ RPL_TRYAGAIN, "%s :Please wait a while and try again." },
++#ifdef HIGHEST_CONNECTIONS
++		{ 0, (char *)NULL },
++/* 265 */	{ RPL_LOCALUSERS, ":Current local users: %d  Max: %d" },
++/* 266 */	{ RPL_GLOBALUSERS, ":Current global users: %d  Max: %d" }
++#else
+ 		{ 0, (char *)NULL }
++#endif
+ };
+ 
+ char	*err_str(numeric, to)
+diff -ur --new-file irc2.10.3p3/ircd/s_misc.c irc2.10.3p3-hoop/ircd/s_misc.c
+--- irc2.10.3p3/ircd/s_misc.c	Fri Oct 19 20:44:27 2001
++++ irc2.10.3p3-hoop/ircd/s_misc.c	Mon Oct 22 17:59:04 2001
+@@ -370,7 +370,11 @@
+ 	    {
+ 		if (sptr->flags & FLAGS_KILLED)
+ 		    {
++#ifdef LOCAL_REJECTIONS_ONLY
++			sendto_flag(SCH_NOTICE, "Killed: %s.",
++#else
+ 			sendto_flag(SCH_LOCAL, "Killed: %s.",
++#endif
+ 				    get_client_name(sptr, TRUE));
+ 			sptr->exitc = EXITC_KILL;
+ 		    }
+@@ -386,6 +390,15 @@
+ 			sendto_flog(sptr, NULL, sptr->user->username,
+ 				    sptr->user->host);
+ # endif
++#ifdef CLIENTS_CHANNEL 
++#    ifdef EASY_CLIENTS
++			sendto_flag(SCH_CLIENTS, "Client exiting: %s was %s from %s reason: %s",
++#else
++			sendto_flag(SCH_CLIENTS, "%s!%s@%s SIGNOFF %s",
++#endif
++				sptr->name,sptr->user->username,sptr->user->host,comment);
++#endif
++
+ 		    }
+ 		else if (sptr->exitc != EXITC_REF && sptr->exitc != EXITC_AREF)
+ 		    {
+@@ -827,14 +840,24 @@
+ 	bzero((char *)&ircst, sizeof(ircst));
+ }
+ 
++#ifdef	EXTRA_STATISTICS
++void	tstats(cptr, name, level)
++aClient	*cptr;
++char	*name;
++int	level;
++#else
+ void	tstats(cptr, name)
+ aClient	*cptr;
+ char	*name;
++#endif
+ {
+ 	Reg	aClient	*acptr;
+ 	Reg	int	i;
+ 	Reg	struct stats	*sp;
+ 	struct	stats	tmp;
++#ifdef	EXTRA_STATISTICS
++	Reg     time_t  now;
++#endif
+ 
+ 	sp = &tmp;
+ 	bcopy((char *)ircstp, (char *)sp, sizeof(*sp));
+@@ -884,6 +907,173 @@
+ 			sp->is_ni++;
+ 	    }
+ 
++#ifdef	EXTRA_STATISTICS
++	switch (level) {
++	case 2:	now = timeofday - me.since;
++		if (now == 0)
++			now = 1;
++
++		sendto_one(cptr,
++    ":%s %d %s :------------------------------------------------------",
++    ME, RPL_STATSDEBUG, name);
++		sendto_one(cptr,
++    ":%s %d %s :Current uptime: %4d day%s, %2d:%02d:%02d%s      %10d s",
++    ME, RPL_STATSDEBUG, name, now/86400, ( now/86400 == 1 ? "" : "s"),
++    (now/3600)%24, (now/60)%60, now%60, ( now/86400 == 1 ? " " : ""), now);
++		sendto_one(cptr,
++    ":%s %d %s :------------------------------------------------------",
++    ME, RPL_STATSDEBUG, name);
++		sendto_one(cptr,
++    ":%s %d %s :Connected  Current  Highest  Average    Total  NetHigh",
++    ME, RPL_STATSDEBUG, name);
++		sendto_one(cptr,
++    ":%s %d %s :Clients:   %6u %8u %8.1f %8u %8u",
++    ME, RPL_STATSDEBUG, name, istat.is_myclnt, istat.is_m_myclnt,
++    (float )((double ) sp->is_cti / (double ) (now)), sp->is_cl,
++    istat.is_m_users);
++		if (istat.is_m_myservice != 0)
++			sendto_one(cptr,
++	    ":%s %d %s :Services:  %6u %8u                   %8u",
++	    ME, RPL_STATSDEBUG, name, istat.is_myservice,
++	    istat.is_m_myservice, istat.is_m_service);
++		sendto_one(cptr,
++    ":%s %d %s :Servers:   %6u %8u %8.1f %8u %8u",
++    ME, RPL_STATSDEBUG, name, istat.is_myserv, istat.is_m_myserv,
++    ((float ) sp->is_sti / (float ) (now)), sp->is_sv, istat.is_m_serv);
++		sendto_one(cptr,
++    ":%s %d %s :------------------------------------------------------",
++    ME, RPL_STATSDEBUG, name);
++		sendto_one(cptr,
++    ":%s %d %s :Duration         Average                       Total",
++    ME, RPL_STATSDEBUG, name);
++		sendto_one(cptr,
++    ":%s %d %s :Clients:     %4d:%02d:%02d                %12lu s",
++    ME, RPL_STATSDEBUG, name,
++    ((sp->is_cti / (sp->is_cl ? sp->is_cl : 1))/3600),
++    (((sp->is_cti / (sp->is_cl ? sp->is_cl : 1))/60)%60),
++    ((sp->is_cti / (sp->is_cl ? sp->is_cl : 1))%60), sp->is_cti);
++		sendto_one(cptr,
++    ":%s %d %s :Servers:     %4d:%02d:%02d                %12lu s",
++    ME, RPL_STATSDEBUG, name,
++    ((sp->is_sti / (sp->is_sv ? sp->is_sv : 1))/3600),
++    (((sp->is_sti / (sp->is_sv ? sp->is_sv : 1))/60)%60),
++    ((sp->is_sti / (sp->is_sv ? sp->is_sv : 1))%60), sp->is_sti);
++		sendto_one(cptr,
++    ":%s %d %s :------------------------------------------------------",
++    ME, RPL_STATSDEBUG, name);
++		sendto_one(cptr,
++    ":%s %d %s :Data received    Average       Rate           Total",
++    ME, RPL_STATSDEBUG, name);
++		sendto_one(cptr,
++    ":%s %d %s :Clients:       %8lu Kb  %6.2f Kb/s %10lu Kb",
++    ME, RPL_STATSDEBUG, name, (sp->is_ckr / ( sp->is_cl ? sp->is_cl : 1 )),
++    ((double ) sp->is_ckr / (double ) (now)), sp->is_ckr);
++		sendto_one(cptr,
++    ":%s %d %s :Servers:       %8lu Kb  %6.2f Kb/s %10lu Kb",
++    ME, RPL_STATSDEBUG, name,
++    ( sp->is_skr / ( sp->is_sv ? sp->is_sv : 1 )),
++    (float )((double ) sp->is_skr / (double ) (now)), sp->is_skr);
++		sendto_one(cptr,
++    ":%s %d %s :UDP:           %8u",
++    ME, RPL_STATSDEBUG, name, sp->is_udpok);
++		sendto_one(cptr,
++    ":%s %d %s :------------------------------------------------------",
++    ME, RPL_STATSDEBUG, name);
++		sendto_one(cptr,
++    ":%s %d %s :Data sent        Average       Rate           Total",
++    ME, RPL_STATSDEBUG, name);
++		sendto_one(cptr,
++    ":%s %d %s :Clients:       %8lu Kb  %6.2f Kb/s %10lu Kb",
++    ME, RPL_STATSDEBUG, name, (sp->is_cks / (sp->is_cl ? sp->is_cl : 1)),
++    (float )((double ) sp->is_cks / (double ) (now)), sp->is_cks);
++		sendto_one(cptr,
++    ":%s %d %s :Servers:       %8lu Kb  %6.2f Kb/s %10lu Kb",
++    ME, RPL_STATSDEBUG, name, (sp->is_sks / (sp->is_sv ? sp->is_sv : 1)),
++    (float )((double ) sp->is_sks / (double ) (now)), sp->is_sks);
++		sendto_one(cptr,
++    ":%s %d %s :------------------------------------------------------",
++    ME, RPL_STATSDEBUG, name);
++		return;
++
++	case 1:	sendto_one(cptr,
++    ":%s %d %s :------------------------------------------------------",
++    ME, RPL_STATSDEBUG, name);
++#if !defined(USE_IAUTH)
++		sendto_one(cptr,
++    ":%s %d %s :Authorization fails:                         %8lu",
++    ME, RPL_STATSDEBUG, name, sp->is_abad);
++		sendto_one(cptr,
++    ":%s %d %s :Authorization successes:                     %8lu",
++    ME, RPL_STATSDEBUG, name, sp->is_asuc);
++#endif
++		sendto_one(cptr,
++    ":%s %d %s :Connections accepted:                        %8lu",
++    ME, RPL_STATSDEBUG, name, sp->is_ac);
++		sendto_one(cptr,
++    ":%s %d %s :Connections refused:                         %8lu",
++    ME, RPL_STATSDEBUG, name, sp->is_ref);
++		sendto_one(cptr,
++    ":%s %d %s :Local connections made:                      %8lu",
++    ME, RPL_STATSDEBUG, name, sp->is_loc);
++		sendto_one(cptr,
++    ":%s %d %s :------------------------------------------------------",
++    ME, RPL_STATSDEBUG, name);
++		sendto_one(cptr,
++    ":%s %d %s :Fakes:                                       %8lu",
++    ME, RPL_STATSDEBUG, name, sp->is_fake);
++		sendto_one(cptr,
++    ":%s %d %s :Nick Collisions:                             %8lu",
++    ME, RPL_STATSDEBUG, name, sp->is_kill);
++	sendto_one(cptr,
++    ":%s %d %s :Unknown connections dropped:                 %8lu",
++    ME, RPL_STATSDEBUG, name, sp->is_ni);
++		sendto_one(cptr,
++    ":%s %d %s :Users without servers:                       %8lu",
++    ME, RPL_STATSDEBUG, name, sp->is_nosrv);
++		sendto_one(cptr,
++    ":%s %d %s :Empty messages:                              %8lu",
++    ME, RPL_STATSDEBUG, name, sp->is_empt);
++		sendto_one(cptr,
++    ":%s %d %s :Numerics seen:                               %8lu",
++    ME, RPL_STATSDEBUG, name, sp->is_num);
++		sendto_one(cptr,
++    ":%s %d %s :Unknown commands:                            %8lu",
++    ME, RPL_STATSDEBUG, name, sp->is_unco);
++		sendto_one(cptr,
++    ":%s %d %s :Unknown prefixes:                            %8lu",
++    ME, RPL_STATSDEBUG, name, sp->is_unpf);
++		sendto_one(cptr,
++    ":%s %d %s :Wrong directions:                            %8lu",
++    ME, RPL_STATSDEBUG, name, sp->is_wrdi);
++		sendto_one(cptr,
++    ":%s %d %s :------------------------------------------------------",
++    ME, RPL_STATSDEBUG, name);
++		sendto_one(cptr,
++    ":%s %d %s :Elapsed time     Minimum   Average   Maximum     Limit",
++    ME, RPL_STATSDEBUG, name);
++		sendto_one(cptr,
++    ":%s %d %s :Nick Delay:    %8lu  %8lu  %8lu  %8lu",
++    ME, RPL_STATSDEBUG, name, sp->is_wwmt,
++    (u_int) (sp->is_wwt / (sp->is_wwcnt ? sp->is_wwcnt : 1 )),
++    sp->is_wwMt, KILLCHASETIMELIMIT);
++		sendto_one(cptr,
++    ":%s %d %s :Whowas:        %8lu  %8lu  %8lu  %8lu",
++    ME, RPL_STATSDEBUG, name, sp->is_lkmt,
++    (u_int) (sp->is_lkt / (sp->is_lkcnt ? sp->is_lkcnt : 1)),
++    sp->is_lkMt, DELAYCHASETIMELIMIT);
++		sendto_one(cptr,
++    ":%s %d %s :------------------------------------------------------",
++    ME, RPL_STATSDEBUG, name);
++#if defined(USE_IAUTH)
++	report_iauth_stats(cptr, name);
++		sendto_one(cptr,
++	":%s %d %s :------------------------------------------------------",
++	ME, RPL_STATSDEBUG, name);
++#endif
++		return;
++	}
++#endif
++
+ 	sendto_one(cptr, ":%s %d %s :accepts %lu refused %lu",
+ 		   ME, RPL_STATSDEBUG, name, sp->is_ac, sp->is_ref);
+ 	sendto_one(cptr, ":%s %d %s :unknown: commands %lu prefixes %lu",
+@@ -985,4 +1175,239 @@
+ 	(void)dgets(-1, NULL, 0); /* make sure buffer is at empty pos */
+ 	close(fd);
+ }     
++#endif
++
++
++#if defined(OPER_KLINE) || defined(LOCOP_KLINE)
++int	m_kline(cptr,sptr,parc,parv)
++aClient	*cptr, *sptr;
++int	parc;       
++char	*parv[];    
++{
++
++#if defined(OPER_KLINE) && defined(LOCOP_KLINE)
++	if (!MyClient(sptr) || !IsAnOper(sptr))
++#else
++#  if defined(OPER_KLINE)
++	if (!MyClient(sptr) || !IsOper(sptr))
++#  else
++	if (!MyClient(sptr) || !IsLocOp(sptr))
++#  endif
++#endif
++	    {
++		sendto_one(sptr, err_str(ERR_NOPRIVILEGES, parv[0]), me.name,
++		    parv[0]);
++		return 0;
++	    }
++
++	return m_dokline(cptr,sptr,parc,parv,1);
++}
++#endif
++
++
++#if defined(OPER_TKLINE) || defined(LOCOP_TKLINE)
++int	m_tkline(cptr,sptr,parc,parv)
++aClient	*cptr, *sptr;
++int	parc;
++char	*parv[];
++{
++
++#if defined(OPER_TKLINE) && defined(LOCOP_TKLINE)
++	if (!MyClient(sptr) || !IsAnOper(sptr))
++#else
++#  if defined(OPER_TKLINE)
++	if (!MyClient(sptr) || !IsOper(sptr))
++#  else
++	if (!MyClient(sptr) || !IsLocOp(sptr))
++#  endif
++#endif
++	   {
++		sendto_one(sptr, err_str(ERR_NOPRIVILEGES, parv[0]), me.name,
++		    parv[0]);
++		return 0;
++	    }
++
++	return m_dokline(cptr,sptr,parc,parv,0);
++}
++#endif
++
++
++#if defined(OPER_KLINE) || defined(LOCOP_KLINE) || \
++    defined(OPER_TKLINE) || defined(LOCOP_TKLINE)
++extern int kline_added;
++
++int	m_dokline(cptr, sptr, parc, parv, perm)
++aClient	*cptr, *sptr;
++int	parc;
++char	*parv[];
++int	perm;
++{
++	aConfItem	*aconf;
++	aClient		*acptr;
++	int		out, i;
++	char		buffer[1024];
++	char		*user, *host;
++	char		kline_reason[256];
++	time_t		current_time;
++
++	if (parc < 3)
++	    {
++		sendto_one(sptr, ":%s NOTICE %s :Not enough parameters",
++			me.name, parv[0]);
++		return 0;
++	    }
++
++	if (match("*@*", parv[1]))
++	    {
++		sendto_one(sptr,
++		":%s NOTICE %s :Sorry but \"%s\" needs to be of the format\
++ of user@host", me.name, parv[0], parv[1]);
++		return 0;
++	    }
++
++	user = parv[1];
++	while (*user)
++	    {
++		if ((*user == ' ') || (*user =='#') ||
++#ifdef INET6
++			(*user == '%')
++#else
++			(*user == ':')
++#endif
++			)
++			break;
++		user++;
++	    }
++
++	if (*user && (*user != ' '))
++	    {
++		sendto_one(sptr,
++		    ":%s NOTICE %s :The user@host may not contain '%c'",
++		    me.name, parv[0], *user);
++		return 0;
++	    }
++
++	host = strchr(parv[1], '@');
++	*(host++) = '\0';
++
++	if ((user = strchr(host, ' ')) != NULL)
++		*user = '\0';
++	user = parv[1];
++
++	if (!match(user, "dummyuser") && !match(host, "dumm.ystring.xx"))
++	    {
++		sendto_one(sptr,
++		    ":%s NOTICE %s :Sorry can not %skline *@*",
++		    me.name, parv[0], ( perm ? "" : "t" ));
++		return 0;
++	    }
++
++	kline_reason[0] = '\0';
++	if (isdigit(*parv[2]))
++	    {
++		sendto_one(sptr,
++		    ":%s NOTICE %s :The %skline reason may not start\
++ with a digit",
++		    me.name, parv[0], ( perm ? "" : "t" ));
++		return 0;
++	    }
++
++	for (i = 2; i < parc; i++)
++	    {
++		if (strlen(parv[i]) + strlen(kline_reason) + 2 < 256)
++		    {
++			strcat(kline_reason, parv[i]);
++			strcat(kline_reason, "\240");
++		    }
++	     }
++	kline_reason[strlen(kline_reason) - 1] = '\0';
++
++	for (i = strlen(kline_reason) - 1; i >= 0; i--)
++	    {
++		if ((kline_reason[i] == '#') || 
++#ifdef INET6
++			(kline_reason[i] == '%')
++#else
++			(kline_reason[i] == ':')
++#endif
++			)
++		    {
++			sendto_one(sptr,
++			    ":%s NOTICE %s :The %skline reason may not\
++ contain '%c'",
++			    me.name, parv[0], ( perm ? "" : "t" ),
++			    kline_reason[i]);
++			return 0;
++		    }
++		}
++
++	aconf = make_conf();
++	aconf->status = CONF_KILL;
++	DupString(aconf->host, host);
++	DupString(aconf->passwd, kline_reason);
++	DupString(aconf->name, user);
++	aconf->port = 0;
++	Class(aconf) = find_class(0);
++	aconf->next = kconf;
++	kconf = aconf;
++	aconf = NULL;
++
++	kline_added = 1;
++	rehashed    = 1;
++
++	if (perm)
++	    {
++		if ((out = open(configfile, O_WRONLY|O_APPEND))==-1)
++		    {
++			sendto_one(sptr,
++			    ":%s NOTICE %s :Problem opening server configfile",
++			    me.name, parv[0]);
++			return 0;
++		    }
++
++		time(&current_time);
++
++		sprintf(buffer, "# Added by %s (%s@%s) on %s",
++			sptr->name, sptr->user->username, sptr->user->host,
++			asctime(localtime(&current_time)));
++		if (write(out, buffer, strlen(buffer)) <= 0)
++		    {
++			sendto_one(sptr,
++			":%s NOTICE %s :Problem writing to the configfile",
++			me.name, parv[0]);
++			close(out);
++			return 0;
++		    }
++
++#ifdef INET6
++		sprintf(buffer, "K%%%s%%%s%%%s%%\n\n", host, kline_reason, user);
++#else
++		sprintf(buffer, "K:%s:%s:%s:\n\n", host, kline_reason, user);
++#endif
++		if (write(out, buffer, strlen(buffer)) <= 0)
++		    {
++			sendto_one(sptr,
++			":%s NOTICE %s :Problem writing to the configfile",
++			me.name, parv[0]);
++			close(out);
++		        return 0;
++		    }
++		close(out);
++	    }
++
++	sendto_flag(SCH_LOCAL, "%s added a %skline for %s@%s with reason: %s",
++	    parv[0], ( perm ? "" : "t" ), user, host, kline_reason);
++	sendto_one(sptr, 
++	    ":%s NOTICE %s :Added %skline for %s@%s%s with reason: %s",
++	    me.name, parv[0], ( perm ? "" : "t" ), user, host,
++	    ( perm ? " to the server configfile" : "" ), kline_reason);
++#if defined(USE_SYSLOG) && defined(SYSLOG_KLINE)
++	syslog(LOG_INFO, "%s!%s@%s %skline %s@%s (%s)",
++		sptr->name, sptr->user->username, sptr->user->host,
++		( perm ? "" : "t" ), user, host, kline_reason);
++#endif
++
++
++	return 1;
++}
+ #endif
+diff -ur --new-file irc2.10.3p3/ircd/s_misc_ext.h irc2.10.3p3-hoop/ircd/s_misc_ext.h
+--- irc2.10.3p3/ircd/s_misc_ext.h	Mon Aug  3 16:09:23 1998
++++ irc2.10.3p3-hoop/ircd/s_misc_ext.h	Mon Oct 22 17:55:00 2001
+@@ -51,8 +51,19 @@
+ 			    char *comment));
+ EXTERN void checklist();
+ EXTERN void initstats();
++#ifdef	EXTRA_STATISTICS
++EXTERN void tstats __P((aClient *cptr, char *name, int level));
++#else
+ EXTERN void tstats __P((aClient *cptr, char *name));
++#endif
+ #ifdef  CACHED_MOTD
+ EXTERN void read_motd __P((char *filename));
+ #endif /* CACHED_MOTD */
++#if	defined(OPER_KLINE) || defined(LOCOP_KLINE)
++EXTERN int m_kline __P((aClient *cptr, aClient *sptr, int parc, char *parv[]));
++#endif
++#if	defined(OPER_TKLINE) || defined(LOCOP_TKLINE)
++EXTERN int m_tkline __P((aClient *cptr, aClient *sptr, int parc,
++    char *parv[]));
++#endif
+ #undef EXTERN
+diff -ur --new-file irc2.10.3p3/ircd/s_serv.c irc2.10.3p3-hoop/ircd/s_serv.c
+--- irc2.10.3p3/ircd/s_serv.c	Fri Oct 19 23:09:10 2001
++++ irc2.10.3p3-hoop/ircd/s_serv.c	Mon Oct 22 17:57:25 2001
+@@ -500,7 +500,11 @@
+ 		/* A server can only be introduced by another server. */
+ 		if (!IsServer(sptr))
+ 		    {
+-			sendto_flag(SCH_LOCAL,
++#ifdef LOCAL_REJECTIONS_ONLY
++				sendto_flag(SCH_NOTICE,
++#else
++				sendto_flag(SCH_LOCAL,
++#endif
+ 			    "Squitting %s brought by %s (introduced by %s)",
+ 				    host, get_client_name(cptr, FALSE),
+ 				    sptr->name);
+@@ -593,6 +597,14 @@
+ 		acptr->serv->snum = find_server_num(acptr->name);
+ 		SetServer(acptr);
+ 		istat.is_serv++;
++#ifdef	EXTRA_STATISTICS
++		/*
++		**  Keep track of the highest number of connected
++		**  servers (hostmasks) to this network.
++		**/
++		if (istat.is_serv > istat.is_m_serv)
++			istat.is_m_serv = istat.is_serv;
++#endif
+ 		add_client_to_list(acptr);
+ 		(void)add_to_client_hash_table(acptr->name, acptr);
+ 		(void)add_to_server_hash_table(acptr->serv, cptr);
+@@ -842,7 +854,23 @@
+ 	SetServer(cptr);
+ 	istat.is_unknown--;
+ 	istat.is_serv++;
++#ifdef	EXTRA_STATISTICS
++	/*
++	**  Keep track of the highest number of connected
++	**  servers to this network.
++	**/
++	if (istat.is_serv > istat.is_m_serv)
++		istat.is_m_serv = istat.is_serv;
++#endif
+ 	istat.is_myserv++;
++#ifdef	EXTRA_STATISTICS
++	/*
++	**  Keep track of the highest number of servers which
++	**  this server has had connected simultaniously.
++	*/
++	if (istat.is_myserv > istat.is_m_myserv)
++		istat.is_m_myserv = istat.is_myserv;
++#endif
+ 	nextping = timeofday;
+ 	sendto_flag(SCH_NOTICE, "Link with %s established. (%X%s)", inpath,
+ 		    cptr->hopcount, (cptr->flags & FLAGS_ZIP) ? "z" : "");
+@@ -1062,7 +1090,11 @@
+ {
+ 	char **text = infotext;
+ 
+-	if (IsServer(cptr) && check_link(cptr))
++	if (
++#ifdef NO_OPER_TRYAGAIN
++		!IsOper(sptr) &&
++#endif
++		IsServer(cptr) && check_link(cptr))
+ 	    {
+ 		sendto_one(sptr, rpl_str(RPL_TRYAGAIN, parv[0]),
+ 			   "INFO");
+@@ -1352,6 +1384,45 @@
+ 		    }
+ 	return;
+ }
++#ifdef STATS_F
++static void report_fd(sptr,acptr,to)
++aClient *sptr, *acptr;
++char *to;
++{
++	static char locip[100], *ret;
++	int s;
++
++	if (IsMe(acptr) || !acptr->acpt || !IsRegistered(acptr))
++		return;
++	ret = 
++#ifdef INET6
++		inetntop(AF_INET6,
++		(char *)&acptr->acpt->ip,
++		mydummy, MYDUMMY_SIZE),
++#else
++		inetntoa((char *)&acptr->acpt->ip);
++#endif
++	s = strlen(ret) + 1;
++	memcpy(locip, ret, s < sizeof(locip) ? s : sizeof(locip));
++	locip[sizeof(locip) - 1] = 0;
++	sendto_one(sptr,":%s %d %s %d %s %d %s %d %s %s %d",
++		ME,RPL_STATSLINKINFO,to,
++		acptr->fd,
++		locip,
++		acptr->acpt->port,
++#ifdef INET6
++		inetntop(AF_INET6,
++		(char *)&acptr->ip,
++		mydummy, MYDUMMY_SIZE),
++#else
++		inetntoa((char *)&acptr->ip),
++#endif
++		acptr->port,acptr->name,
++		acptr->user ? acptr->user->username : acptr->auth,
++		acptr->user ? timeofday - acptr->user->last : -1
++		);
++}
++#endif /* STATS_F */
+ 
+ int	m_stats(cptr, sptr, parc, parv)
+ aClient *cptr, *sptr;
+@@ -1366,10 +1437,21 @@
+ 	int	wilds, doall;
+ 	char	*name, *cm;
+ 
++#ifdef RESTRICT_RESTRICTED
++	if (MyConnect(sptr) && IsRestricted(sptr))
++	{
++		sendto_one(sptr,err_str(ERR_RESTRICTED,parv[0]));
++		return 5;
++	}
++#endif
+ 	if (IsServer(cptr) &&
+ 	    (stat != 'd' && stat != 'p' && stat != 'q' && stat != 's' &&
+ 	     stat != 'u' && stat != 'v') &&
++#ifdef NO_OPER_TRYAGAIN
++	    !IsOper(sptr))
++#else
+ 	    !((stat == 'o' || stat == 'c') && IsOper(sptr)))
++#endif
+ 	    {
+ 		if (check_link(cptr))
+ 		    {
+@@ -1396,8 +1478,29 @@
+ 	doall = !match(name, ME) && !match(cm, ME);
+ 	wilds = index(cm, '*') || index(cm, '?');
+ 
++#ifdef CLIENTS_CHANNEL
++       if (stat && (sptr->user)) {
++#ifdef EASY_CLIENTS
++		sendto_flag(SCH_CLIENTS,"Stats %c by %s from %s on %s",
++			stat,sptr->name,sptr->user->username,sptr->user->host);
++#else
++		sendto_flag(SCH_CLIENTS,"%s!%s@%s STATS %c",
++			sptr->name,sptr->user->username,sptr->user->host,stat);
++#endif
++       }
++#endif
++
+ 	switch (stat)
+ 	{
++#ifdef STATS_F
++	case 'f' : case 'F' : /* send FD list */
++		if (!IsOper(sptr) || !MyConnect(sptr))
++		{
++			stat = '*';
++			break;
++		}
++		stat = 'f';
++#endif
+ 	case 'L' : case 'l' :
+ 		/*
+ 		 * send info about connections which match, or all if the
+@@ -1411,6 +1514,13 @@
+ 			    {
+ 				if (!(acptr = local[i]))
+ 					continue;
++#ifdef STATS_F
++				if (stat == 'f')
++				{
++					report_fd(sptr, acptr, parv[0]);
++					continue;
++				}
++#endif	
+ 				if (IsPerson(acptr) && !(MyConnect(sptr) 
+ 				    && IsAnOper(sptr)) && acptr != sptr)
+ 					continue;
+@@ -1429,7 +1539,12 @@
+ 		else
+ 		    {
+ 			if ((acptr = find_client(cm, NULL)))
+-				sendto_one(cptr, Lformat, ME,
++#ifdef STATS_F
++				if (stat == 'f')
++					report_fd(sptr, acptr, parv[0]);
++				else
++#endif
++					sendto_one(cptr, Lformat, ME,
+ 					RPL_STATSLINKINFO, parv[0],
+ 					get_client_name(acptr, isupper(stat)),
+ 					(int)DBufLength(&acptr->sendQ),
+@@ -1491,8 +1606,24 @@
+ 	case 'S' : case 's' : /* S lines */
+ 		report_configured_links(cptr, parv[0], CONF_SERVICE);
+ 		break;
++#ifdef	EXTRA_STATISTICS
++	case 'T' : /* various statistics for operators only */
++		if (MyOper(sptr)) {
++			tstats(cptr, parv[0], 2);
++			break;
++		}
++	case 't' : /* various statistics for operators only */
++		if (MyOper(sptr)) {
++			tstats(cptr, parv[0], 1);
++			break;
++		}
++
++		/* various statistics */
++		tstats(cptr, parv[0], 0);
++#else
+ 	case 'T' : case 't' : /* various statistics */
+ 		tstats(cptr, parv[0]);
++#endif
+ 		break;
+ 	case 'U' : case 'u' : /* uptime */
+ 	    {
+@@ -1660,8 +1791,8 @@
+ 	if (parc == 1 || !MyConnect(sptr))
+ 	    {
+ 		sendto_one(sptr, rpl_str(RPL_LUSERCLIENT, parv[0]),
+-			   istat.is_user[0] + istat.is_user[1],
+-			   istat.is_service, istat.is_serv);
++						istat.is_user[0] + istat.is_user[1],
++						istat.is_service, istat.is_serv);
+ 		if (istat.is_oper)
+ 			sendto_one(sptr, rpl_str(RPL_LUSEROP, parv[0]),
+ 				   istat.is_oper);
+@@ -1674,6 +1805,13 @@
+ 		sendto_one(sptr, rpl_str(RPL_LUSERME, parv[0]),
+ 			   istat.is_myclnt, istat.is_myservice,
+ 			   istat.is_myserv);
++#ifdef HIGHEST_CONNECTIONS
++		sendto_one(sptr, rpl_str(RPL_LOCALUSERS, parv[0]),
++					istat.is_myclnt, istat.is_myclnt_max);
++		sendto_one(sptr, rpl_str(RPL_GLOBALUSERS, parv[0]),
++					istat.is_user[0] + istat.is_user[1],
++					istat.is_user_max);
++#endif
+ 		return 2;
+ 	    }
+ 	(void)collapse(parv[1]);
+@@ -1753,6 +1891,13 @@
+ 			   count_channels(sptr));
+ 	sendto_one(sptr, rpl_str(RPL_LUSERME, parv[0]), m_client, m_service,
+ 		   m_server);
++#ifdef HIGHEST_CONNECTIONS
++	sendto_one(sptr, rpl_str(RPL_LOCALUSERS, parv[0]),
++				m_client, istat.is_myclnt_max);
++	sendto_one(sptr, rpl_str(RPL_GLOBALUSERS, parv[0]),
++					istat.is_user[0] + istat.is_user[1],
++					istat.is_user_max);
++#endif
+ 	return 2;
+     }
+ 
+@@ -2059,7 +2204,13 @@
+ 		tname = parv[1];
+ 	else
+ 		tname = ME;
+-
++#ifdef RESTRICT_RESTRICTED
++	if (MyConnect(sptr) && IsRestricted(sptr))
++	{
++			sendto_one(sptr,err_str(ERR_RESTRICTED,parv[0]));
++			return 5;
++	}
++#endif
+ 	switch (hunt_server(cptr, sptr, ":%s TRACE :%s", 1, parc, parv))
+ 	{
+ 	case HUNTED_PASS: /* note: gets here only if parv[1] exists */
+@@ -2225,7 +2376,11 @@
+ 	struct	tm	*tm;
+ #endif
+ 
+-	if (check_link(cptr))
++	if (
++#ifdef NO_OPER_TRYAGAIN
++		!IsOper(sptr) &&
++#endif
++		check_link(cptr))
+ 	    {
+ 		sendto_one(sptr, rpl_str(RPL_TRYAGAIN, parv[0]), "MOTD");
+ 		return 5;
+diff -ur --new-file irc2.10.3p3/ircd/s_service.c irc2.10.3p3-hoop/ircd/s_service.c
+--- irc2.10.3p3/ircd/s_service.c	Mon May 14 06:12:32 2001
++++ irc2.10.3p3-hoop/ircd/s_service.c	Mon Oct 22 17:55:00 2001
+@@ -440,10 +440,26 @@
+ 			    get_client_name(sptr, TRUE));
+ 		istat.is_unknown--;
+ 		istat.is_myservice++;
++#ifdef	EXTRA_STATISTICS
++		/*
++		**  Keep track of maximum number of simultanious
++		**  services to this server.
++		*/
++		if (istat.is_myservice > istat.is_m_myservice)
++			istat.is_m_myservice = istat.is_myservice;
++#endif
+ 	    }
+ #endif
+ 
+ 	istat.is_service++;
++#ifdef	EXTRA_STATISTICS
++	/*
++	**  Keep track of maximum number of services
++	**  simultaniously connected to this network.
++	*/
++	if (istat.is_service > istat.is_m_service)
++		istat.is_m_service = istat.is_service;
++#endif
+ 	svc = make_service(sptr);
+ 	SetService(sptr);
+ 	svc->servp = sp;
+diff -ur --new-file irc2.10.3p3/ircd/s_user.c irc2.10.3p3-hoop/ircd/s_user.c
+--- irc2.10.3p3/ircd/s_user.c	Fri Oct 19 15:56:55 2001
++++ irc2.10.3p3-hoop/ircd/s_user.c	Mon Oct 22 17:55:00 2001
+@@ -363,6 +363,9 @@
+ #ifndef NO_PREFIX
+ 	char	prefix;
+ #endif
++#ifdef	RESTRICT_USERNAMES
++	char	*hptr;
++#endif
+ 	int	i;
+ 
+ 	user->last = timeofday;
+@@ -546,6 +549,23 @@
+ 			return exit_client(cptr, sptr, &me, "Bad Password");
+ 		    }
+ 		bzero(sptr->passwd, sizeof(sptr->passwd));
++#ifdef	RESTRICT_USERNAMES
++		/*
++		 * Do not allow special characters in the username.
++		 */
++		hptr = user->username;
++		if (prefix)
++			hptr++;
++		while (*hptr && isvaliduser(*hptr))
++			hptr++;
++		if (*hptr) {
++			ircstp->is_ref++;
++			sendto_flag(SCH_LOCAL, "Invalid username:  %s@%s.",
++				    sptr->user->username, sptr->sockhost);
++			return exit_client(cptr, sptr, &me,
++					   "Invalid username");
++		}
++#endif
+ 		/*
+ 		 * following block for the benefit of time-dependent K:-lines
+ 		 */
+@@ -582,6 +602,16 @@
+ 			return exit_client(cptr, sptr, &me , "R-lined");
+ 		    }
+ #endif
++
++#ifdef CLIENTS_CHANNEL
++#ifdef EASY_CLIENTS
++			sendto_flag(SCH_CLIENTS,"Client connecting: %s is %s from %s named %s",
++#else
++			sendto_flag(SCH_CLIENTS,"%s!%s@%s %s CONNECT",
++#endif
++				nick,user->username,user->host,sptr->info);
++#endif
++
+ 		if (oldstatus == STAT_MASTER && MyConnect(sptr))
+ 			(void)m_oper(&me, sptr, 1, parv);
+ /*		*user->tok = '1';
+@@ -632,10 +662,60 @@
+ 		istat.is_user[1]++;	/* Local and server defaults +i */
+ 	else
+ 		istat.is_user[0]++;
++#ifdef HIGHEST_CONNECTIONS
++	if (istat.is_user[1] + istat.is_user[0] > istat.is_user_max)
++			istat.is_user_max = istat.is_user[1] + istat.is_user[0];
++#endif
++#ifdef	EXTRA_STATISTICS
++	/*
++	**  Keep track of maximum number of global users.
++	*/
++	if ((istat.is_user[1] + istat.is_user[0]) > istat.is_m_users) {
++		istat.is_m_users = istat.is_user[1] + istat.is_user[0];
++		if ((istat.is_m_users % 1000) == 0)
++			sendto_flag(SCH_NOTICE,
++			"New highest global client connection:  %d",
++			istat.is_m_users);
++	}
++#endif
+ 	if (MyConnect(sptr))
+ 	    {
+ 		istat.is_unknown--;
+ 		istat.is_myclnt++;
++#ifdef HIGHEST_CONNECTIONS
++	if (istat.is_myclnt > istat.is_myclnt_max) 
++			istat.is_myclnt_max = istat.is_myclnt;
++#endif
++#ifdef	EXTRA_STATISTICS
++		/*
++		**  Inform of highest client connection.
++		*/
++		if (istat.is_myclnt > istat.is_m_myclnt) {
++			istat.is_m_myclnt = istat.is_myclnt;
++			if ((istat.is_m_myclnt % 10) == 0)
++				sendto_flag(SCH_NOTICE,
++				"New highest local client connection:  %d",
++				istat.is_m_myclnt);
++		}
++		/*
++		**  Small cludge to try and warn of some fast clonebots.
++		*/
++		if ((istat.is_myclnt % 10) == 0) {
++			if (istat.is_myclnt > istat.is_last_cnt) {
++				if (istat.is_last_cnt_t == 0)
++					istat.is_last_cnt_t = me.since;
++
++				sendto_flag(SCH_NOTICE,
++				"Local increase from %d to %d clients in %d second%s",
++				(istat.is_myclnt - 10),istat.is_myclnt,
++				(timeofday - istat.is_last_cnt_t),
++				((timeofday - istat.is_last_cnt_t == 1) ? ""
++				: "s"));
++			}
++			istat.is_last_cnt_t = timeofday;
++			istat.is_last_cnt = istat.is_myclnt;
++		}
++#endif
+ 		sprintf(buf, "%s!%s@%s", nick, user->username, user->host);
+ 		sptr->exitc = EXITC_REG;
+ 		sendto_one(sptr, rpl_str(RPL_WELCOME, nick), buf);
+@@ -652,6 +732,7 @@
+ 		send_umode(sptr, sptr, 0, ALL_UMODES, buf);
+ 		nextping = timeofday;
+ 	    }
++
+ #ifdef	USE_SERVICES
+ #if 0
+ 	check_services_butone(SERVICE_WANT_NICK, user->server, NULL,
+@@ -1004,6 +1085,18 @@
+ 		** on that channel. Propagate notice to other servers.
+ 		*/
+ 		sendto_common_channels(sptr, ":%s NICK :%s", parv[0], nick);
++#ifdef CLIENTS_CHANNEL
++		if (MyConnect(sptr) && IsRegisteredUser(sptr)) {
++#ifdef EASY_CLIENTS
++			sendto_flag(SCH_CLIENTS,"Nick change %s to %s for %s from %s",
++			parv[0],nick,sptr->user->username,sptr->user->host);
++#else
++			sendto_flag(SCH_CLIENTS,"%s!%s@%s NICK %s",
++			parv[0],sptr->user->username, sptr->user->host,nick);
++#endif
++		}
++#endif
++
+ 		if (sptr->user) /* should always be true.. */
+ 		    {
+ 			add_history(sptr, sptr);
+@@ -1649,7 +1742,11 @@
+ 
+ 	if (acptr->user && MyConnect(acptr))
+ 		sendto_one(sptr, rpl_str(RPL_WHOISIDLE, sptr->name),
++#ifdef WHOIS_SIGNON_TIME
++			   name, timeofday - user->last,acptr->firsttime);
++#else
+ 			   name, timeofday - user->last);
++#endif
+ }
+ 
+ /*
+@@ -1929,7 +2026,7 @@
+ int	parc;
+ char	*parv[];
+     {
+-	static	char	quitc[] = "I Quit";
++	static	char	quitc[] = "";
+ 	register char *comment = (parc > 1 && parv[1]) ? parv[1] : quitc;
+ 
+ 	if (MyClient(sptr) || MyService(sptr))
+@@ -2456,6 +2553,50 @@
+ 	    {
+ 		(void)detach_conf(sptr, aconf);
+ 		sendto_one(sptr,err_str(ERR_PASSWDMISMATCH, parv[0]));
++#ifdef FAILED_OPERLOG
++              sendto_flag(SCH_NOTICE, "FAILED OPER %s attempt by %s!%s@%s",
++                          name, parv[0], sptr->user->username, sptr->user->host);
++#     if defined(USE_SYSLOG) && defined(SYSLOG_OPER)
++              syslog(LOG_INFO, "FAILED OPER %s attempt by %s!%s@%s [%s@%s]",
++                          name, parv[0], sptr->user->username, sptr->user->host,
++                          sptr->auth, IsUnixSocket(sptr) ?  sptr->sockhost :
++#ifdef INET6
++                          inet_ntop(AF_INET6, (char *)&sptr->ip), mydummy, MYDUMMY_SIZE);
++#else
++               
++                          inetntoa((char *)&sptr->ip));
++#endif
++#     endif
++#     ifdef FNAME_OPERLOG
++            {
++              int     logfile;
++
++              (void)alarm(3);
++              if (IsPerson(sptr) &&
++                  (logfile = open(FNAME_OPERLOG, O_WRONLY|O_APPEND)) != -1)
++              {
++                (void)alarm(0);
++                SPRINTF(buf, "%s FAILED OPER %s attempt by %s!%s@%s [%s@%s]\n",
++                         myctime(timeofday), name, parv[0], sptr->user->username,
++                         sptr->user->host, sptr->auth, IsUnixSocket(sptr) ?
++                         sptr->sockhost :
++#ifdef INET6
++                         inetntop(AF_INET6, (char *)&sptr->ip, mydummy,
++                                  MYDUMMY_SIZE));
++                          
++#else
++                         inetntoa((char *)&sptr->ip));
++#endif
++              (void)alarm(3);
++              (void)write(logfile, buf, strlen(buf));
++              (void)alarm(0);
++              (void)close(logfile);
++         }
++         (void)alarm(0);
++           }
++#     endif
++#endif
++
+ 	    }
+ 	return 3;
+     }
+diff -ur --new-file irc2.10.3p3/support/Makefile.in irc2.10.3p3-hoop/support/Makefile.in
+--- irc2.10.3p3/support/Makefile.in	Fri Feb  9 14:47:07 2001
++++ irc2.10.3p3-hoop/support/Makefile.in	Mon Oct 22 17:55:00 2001
+@@ -157,7 +157,7 @@
+ 
+ IAUTH_COMMON_OBJS = clsupport.o clmatch.o # This is a little evil
+ IAUTH_OBJS = iauth.o a_conf.o a_io.o a_log.o \
+-             mod_lhex.o mod_pipe.o mod_rfc931.o mod_socks.o
++             mod_lhex.o mod_pipe.o mod_rfc931.o mod_socks.o mod_webproxy.o
+ IAUTH = iauth
+ 
+ CHKCONF_COMMON_OBJS = match.o
+@@ -463,6 +463,9 @@
+ 
+ mod_socks.o: ../iauth/mod_socks.c config.h setup.h
+ 	$(CC) $(A_CFLAGS) -c -o $@ ../iauth/mod_socks.c
++
++mod_webproxy.o: ../iauth/mod_webproxy.c config.h setup.h
++	$(CC) $(A_CFLAGS) -c -o $@ ../iauth/mod_webproxy.c -Wall
+ 
+ chkconf.o: ../ircd/chkconf.c setup.h config.h
+ 	$(CC) $(CC_CFLAGS) -DCHKCONF_COMPILE -DIRCDCONF_PATH="\"$(IRCDCONF_PATH)\"" -DIRCDM4_PATH="\"$(IRCDM4_PATH)\"" -c -o $@ ../ircd/chkconf.c
+diff -ur --new-file irc2.10.3p3/support/config.h.dist irc2.10.3p3-hoop/support/config.h.dist
+--- irc2.10.3p3/support/config.h.dist	Fri Oct 19 23:51:15 2001
++++ irc2.10.3p3-hoop/support/config.h.dist	Mon Oct 22 17:55:00 2001
+@@ -323,7 +323,7 @@
+  * send to the server without processing before disconnecting the client for
+  * flooding it.  Values greater than 8000 make no difference to the server.
+  */
+-#define	CLIENT_FLOOD	1000
++#define	CLIENT_FLOOD	8000
+ 
+ /* Remote query flood protection. */
+ #define	CHREPLLEN	8192
+@@ -340,6 +340,22 @@
+ #undef USE_SERVICES
+ 
+ /*
++ * This two figures tell the server not to give channel operator status
++ * to a user joining an empty channel if the actual server count
++ * in the network is less than MIN_CHANOP_SERV *or* the actual channel
++ * count is less than MIN_CHANOP_CHAN *or* the user count is
++ * less than MIN_CHANOP_USR (we need to check all counts
++ * since during a netjoin servers are sent before user/channels and
++ * it could be possible to win the race and get chanop during
++ * a slow netjoin.
++ */
++#define MIN_CHANOP_SERV 0
++
++#define MIN_CHANOP_CHAN 0
++
++#define MIN_CHANOP_USR 0
++
++/*
+  * Define the following to make the delay for nicks random.
+  * Some people believe a bot can exactly time the delay and don't like it,
+  * I think this is a useless concern. -krys
+@@ -383,6 +399,124 @@
+  */
+ #undef	CLONE_CHECK
+ 
++
++/*
++ * Disclaimer: The following part concerns the Cr-patches. By defining this
++ *             you will end up with "no warranty" whatsoever - use at your
++ *             own risk.
++ *             The Cr patch does not compromize the anonymity and does
++ *             not affect users integrity in any way. The new features will
++ *             only provide extra functionality and statistics for local
++ *             IRC operators.
++ */
++
++
++/*
++ * Define this if you want to allow online K-lining (permanent) for
++ * regular and local operators.
++ */
++#undef	OPER_KLINE
++#undef	LOCOP_KLINE
++
++/*
++ * Define this if you want to allow online K-lining to memory only
++ * which is removed after rehashing the configuration file or by
++ * restarting the server.
++ */
++#undef	OPER_TKLINE
++#undef	LOCOP_TKLINE
++
++/*
++ * Define this if you want (t)kline requests to go to syslog
++ * Note that you must also have USE_SYSLOG defined otherwise
++ * it won't work
++ * this is a part of patch f2 by fantomas
++ */
++#define SYSLOG_KLINE
++
++/*
++ * Only allow usernames with no special characters in them.
++ */
++#define	RESTRICT_USERNAMES
++
++/*
++ * This will give some extra statistics, such as highest usercount,
++ * connection duration and local client incrementation.
++ */
++#define	EXTRA_STATISTICS
++
++/* CrXXe6 related stuff follows. It makes the TKLINE/KLINE servernotice
++ * show the k-linereason too and does two cosmetical corrections to the
++ * "Local increase..." and the RPL_YOUREOPER servernotices. Also it
++ * doesn't suppress iauth statistics for opers using stats t. 
++ *
++ * Define this to show and log failed /oper attempts too!
++ */
++#undef FAILED_OPERLOG
++
++/* Fl4 related stuff follows - so far, the only stuff retained from Fl3c
++ * for Fl4 is the &clients channel ; this is because the TKLINE/KLINE code
++ * from Fl3c is also present in the Cr15 code. 
++ */
++
++/* define this to enable an extra local channel '&clients', which only 
++ * IRC operators may join. Notification of nick-changes, connects, exits,
++ * and requests for server statistics will be sent to this channel. 
++ * Some people regard this as a breach of privacy, hence (unlike Fl3c) 
++ * it is turned off by default.
++ */
++#undef CLIENTS_CHANNEL
++
++/*
++ * define this to have clients_chanel output more parsable by scripts
++ * this is a part of patch f2 by fantomas
++ */
++#define EASY_CLIENTS
++
++
++/*
++ * Define this to see when a channel topic was set and who it was set by.
++ */
++#define TOPICWHOTIME
++
++/*
++ * Define this to display the local and global highest client connections
++ * in /lusers.
++ */
++#define        HIGHEST_CONNECTIONS
++
++/*
++ * Define this if you want msgs normally sent to &local moved to &notices
++ * - EXCEPT unauth/rejection/too many connection notices. The reasoning
++ * behind this is if you want to see local information except the annoying
++ * and resource wasting unauths and rejections..
++ */
++#define        LOCAL_REJECTIONS_ONLY
++
++
++/* +jv patch defines follows */
++
++/* Disallow STATS and TRACE commands for restricted clients
++ */
++#undef RESTRICT_RESTRICTED
++
++/* New stats - F show FDs and remote&local ports (local oper only)
++ */
++#undef STATS_F
++
++/* show signon time of local clients in whois */
++#define WHOIS_SIGNON_TIME
++
++/* no RPL_TRYAGAIN for opers - i think it's right and doesn't add 
++ * privileges for opers, just allows them to administrate net better.
++ */
++#define NO_OPER_TRYAGAIN
++/* If you want to notify users that doing /LIST is bad and they should
++   use ALIS instead, define this. Notice is sent BEFORE any output.
++
++#undef LIST_ALIS_NOTE
++/* end of +jv patch */
++
+ /*   STOP STOP STOP STOP STOP STOP STOP STOP STOP STOP STOP STOP STOP STOP  */
+ /*   STOP STOP STOP STOP STOP STOP STOP STOP STOP STOP STOP STOP STOP STOP  */
+ /*   STOP STOP STOP STOP STOP STOP STOP STOP STOP STOP STOP STOP STOP STOP  */
+@@ -397,7 +531,7 @@
+  * server the Operator is connected to (ie lets them deal with local
+  * problem users or 'ghost' clients
+  */
+-#define	LOCAL_KILL_ONLY
++#undef	LOCAL_KILL_ONLY
+ #endif
+ 
+ /* Default server port, used by client. */
+@@ -512,6 +646,11 @@
+  */
+ /* #undef	NO_IDENT */
+ /* #undef	NO_PREFIX */
++
++/* don't call alarm() after write - remains of ancient code when the ircd 
++ *	used blocking IO... - jv
++ */
++#define NOWRITEALARM
+ 
+ /* ------------------------- END CONFIGURATION SECTION -------------------- */
+ #ifndef ENABLE_SUMMON
+diff -ur --new-file irc2.10.3p3/support/iauth.conf irc2.10.3p3-hoop/support/iauth.conf
+--- irc2.10.3p3/support/iauth.conf	Mon Jul  5 00:15:43 1999
++++ irc2.10.3p3-hoop/support/iauth.conf	Mon Oct 22 17:55:00 2001
+@@ -14,5 +14,10 @@
+ module rfc931
+ 
+ # Check and reject open SOCKS proxies
+-#module socks
+-#	option = reject,paranoid
++module socks
++	option = reject,paranoid
++	timeout = 5
++
++module webproxy
++        option = log,reject
++	timeout = 10
+\ No newline at end of file
+diff -ur --new-file irc2.10.3p3/support/tkconf.h.dist irc2.10.3p3-hoop/support/tkconf.h.dist
+--- irc2.10.3p3/support/tkconf.h.dist	Sun Feb 21 01:33:47 1999
++++ irc2.10.3p3-hoop/support/tkconf.h.dist	Mon Oct 22 17:55:00 2001
+@@ -28,8 +28,8 @@
+ #undef TKSERV_DEBUG
+ 
+ /* The name of the ircd config file backup (suffix after CPATH) */
+-#define TKSERV_IRCD_CONFIG_BAK 	CPATH".tkserv"
++#define TKSERV_IRCD_CONFIG_BAK 	TKSERV_IRCD_CONF".tkserv"
+ 
+ /* The name of the ircd temp config file (suffix after CPATH) */
+-#define TKSERV_IRCD_CONFIG_TMP	CPATH".tmp"
++#define TKSERV_IRCD_CONFIG_TMP	TKSERV_IRCD_CONF".tmp"
+ 
