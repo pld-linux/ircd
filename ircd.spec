@@ -21,6 +21,7 @@ Patch1:		%{name}-conf_delimiter_4_easy_upgrade.patch
 Patch2:		%{name}-config.patch
 Patch3:		%{name}-crypt.patch
 Patch4:		%{name}-m_ping.patch
+Patch5:		%{name}-va_list.patch
 URL:		http://www.irc.org/
 #BuildRequires:	autoconf
 BuildRequires:	automake
@@ -62,6 +63,9 @@ jest tak¿e wersja obs³uguj±ca IPv6.
 %patch2 -p1
 %{?with_crypt:%patch3 -p1}
 %patch4 -p1
+%ifarch amd64 ppc
+%patch5 -p1
+%endif
 
 %build
 cp -f /usr/share/automake/config.* support
