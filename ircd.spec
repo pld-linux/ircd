@@ -91,7 +91,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %pre
 %{_sbindir}/groupadd -f -g 75 ircd 2> /dev/null
-%{_sbindir}/useradd -g ircd -m -d /etc/%{name} -u 75 -s /bin/true ircd 2> /dev/null
+%{_sbindir}/useradd -g ircd -d /etc/%{name} -u 75 -s /bin/true ircd 2> /dev/null
 
 %post
 /sbin/chkconfig --add ircd
