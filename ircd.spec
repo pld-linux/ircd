@@ -22,6 +22,7 @@ URL:		http://www.irc.org/
 BuildRequires:	automake
 BuildRequires:	ncurses-devel
 BuildRequires:	textutils
+BuildRequires:	rpmbuild(macros) >= 1.159
 BuildRequires:	zlib-devel
 PreReq:		rc-scripts
 Requires(pre):	/usr/bin/getgid
@@ -30,12 +31,14 @@ Requires(pre):	/usr/sbin/groupadd
 Requires(pre):	/usr/sbin/useradd
 Requires(post):	fileutils
 Requires(post,preun):	/sbin/chkconfig
-Requires(postun):	/usr/sbin/userdel
 Requires(postun):	/usr/sbin/groupdel
-BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
+Requires(postun):	/usr/sbin/userdel
+Provides:	group(ircd)
+Provides:	user(ircd)
+Obsoletes:	bircd
 Obsoletes:	ircd-hybrid
 Obsoletes:	ircd-ptlink
-Obsoletes:	bircd
+BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define		_sysconfdir	/etc/%{name}
 %define		_localstatedir	/var/lib/%{name}
@@ -178,8 +181,8 @@ fi
 %postun
 # If package is being erased for the last time.
 if [ "$1" = "0" ]; then
-	/usr/sbin/userdel ircd 2> /dev/null
-	/usr/sbin/groupdel ircd 2> /dev/null
+	%userremove ircd
+	%groupremove ircd
 fi
 
 %files
