@@ -143,11 +143,6 @@ touch %{_chroot}/log/users
 chmod 640 %{_chroot}/log/*
 
 %preun
-if [ $1 = 0 ] ; then
-	/sbin/service ircd stop >/dev/null 2>&1
-	rm -f /var/ircd/run/*
-	/sbin/chkconfig --del ircd
-fi
 
 %clean
 rm -rf $RPM_BUILD_ROOT
