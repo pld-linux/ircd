@@ -1,17 +1,17 @@
 #
 # Conditional build:
-# _with_hm	- with soper/hawkmod patch, but without hoop3.
-# _without_ipv6	- without ipv6 support.
+%bcond_with	hm	# with soper/hawkmod patch, but without hoop3
+%bcond_without	ipv6	# without IPv6 support
 #
 Summary:	Internet Relay Chat Server
 Summary(pl):	Serwer IRC (Internet Relay Chat)
 Name:		ircd
-Version:	2.10.3p3
-Release:	4
+Version:	2.10.3p6
+Release:	1
 License:	GPL
 Group:		Daemons
 Source0:	ftp://ftp.irc.org/irc/server/irc%{version}.tgz
-# Source0-md5:	bec7916f39043609c528afac507a2e00
+# Source0-md5:	90f8c27e9a24b00488a25ef8e668546f
 Source1:	%{name}.init
 Source2:	%{name}.sysconfig
 Source3:	%{name}.logrotate
@@ -22,13 +22,14 @@ Patch2:		%{name}-hm.patch
 # MAX_CONNECTIONS already redefined in ircd-config.patch.
 # Also MIN_CHANOP_SERV, MIN_CHANOP_CHAN, MIN_CHANOP_USR to 0.
 Patch3:		%{name}-hoop3.diff
-Patch4:		http://akson.sgh.waw.pl/~chopin/ircd/patches/m_join.diff
+Patch4:		%{name}-ac-workaround.patch
 URL:		http://www.irc.org/
 #BuildRequires:	autoconf
+BuildRequires:	automake
 BuildRequires:	ncurses-devel
 BuildRequires:	textutils
 BuildRequires:	zlib-devel
-Prereq:		rc-scripts
+PreReq:		rc-scripts
 Requires(pre):	/usr/bin/getgid
 Requires(pre):	/bin/id
 Requires(pre):	/usr/sbin/groupadd
@@ -55,22 +56,24 @@ wspiera tak¿e protokó³ IPv6.
 %setup -q -n irc%{version}
 %patch0 -p1
 %patch1 -p1
-%{?_with_hm:%patch2 -p1}
-%{?!_with_hm:%patch3 -p1}
-cd ircd
-%patch4 -p0
+%{?with_hm:%patch2 -p1}
+%{!?with_hm:%patch3 -p1}
+%patch4 -p1
 
 %build
+cp -f /usr/share/automake/config.* support
 #cd support
 #	autoheader
 #	autoconf
 #cd ..
 
+# cannot regenerate, so use workaround
+export ac_cv_lib_nsl_socket=no
 %configure2_13 \
 	--logdir=%{_var}/log/%{name} \
 	--enable-dsm \
 	--with-zlib \
-%{?!_without_ipv6:--enable-ip6}
+	%{?with_ipv6:--enable-ip6}
 
 cd "`support/config.guess`"
 %{__make} all
@@ -92,14 +95,14 @@ install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/%{name}
 install %{SOURCE2} $RPM_BUILD_ROOT/etc/sysconfig/%{name}
 install %{SOURCE3} $RPM_BUILD_ROOT/etc/logrotate.d/%{name}
 
-%{?!_without_ipv6:tr ':' '%' < $RPM_BUILD_ROOT%{_sysconfdir}/example.conf > $RPM_BUILD_ROOT%{_sysconfdir}/ircd.conf}
-%{?_without_ipv6:install $RPM_BUILD_ROOT%{_sysconfdir}/example.conf $RPM_BUILD_ROOT%{_sysconfdir}/ircd.conf}
+%{?with_ipv6:tr ':' '%' < $RPM_BUILD_ROOT%{_sysconfdir}/example.conf > $RPM_BUILD_ROOT%{_sysconfdir}/ircd.conf}
+%{!?with_ipv6:install $RPM_BUILD_ROOT%{_sysconfdir}/example.conf $RPM_BUILD_ROOT%{_sysconfdir}/ircd.conf}
 
 rm -f $RPM_BUILD_ROOT%{_sysconfdir}/example.conf
 
 cat << EOF > $RPM_BUILD_ROOT%{_sysconfdir}/ircd.motd
 
-Powered by PLD Linux Distribution IRC Server with IPv6 support!
+Powered by PLD Linux Distribution IRC Server%{?with_ipv6: with IPv6 support}!
 
 WWW:        http://www.pld-linux.org/
 FTP:        ftp://ftp.pld-linux.org/
@@ -177,4 +180,5 @@ fi
 %attr(664,root,ircd) %{_sysconfdir}/ircd.motd
 %{_mandir}/man*/*
 %attr(754,root,root) /etc/rc.d/init.d/%{name}
-%attr(644,root,root) /etc/sysconfig/%{name}
+%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/sysconfig/%{name}
+%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/logrotate.d/%{name}
