@@ -5,8 +5,6 @@ Version:	2.10.3p3
 Release:	1
 License:	GPL
 Group:		Daemons
-Group(de):	Server
-Group(pl):	Serwery
 Source0:	ftp://ftp.irc.org/irc/server/irc%{version}.tgz
 Source1:	%{name}.init
 Source2:	%{name}.sysconfig
