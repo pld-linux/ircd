@@ -10,6 +10,7 @@ Source1:	%{name}.init
 Source2:	%{name}.sysconfig
 Patch0:		%{name}-config.patch
 Patch1:		%{name}-linux.patch
+Patch2:		ircd-hm.patch
 URL:		http://www.irc.org/
 BuildRequires:	zlib-devel
 BuildRequires:	ncurses-devel
@@ -35,6 +36,7 @@ wspiera tak¿e protokó³ IPv6.
 %setup -q -n irc%{version}
 %patch0 -p1
 %patch1 -p1
+%{?_with_hm:%patch2 -p1}
 
 %build
 #cd support
@@ -78,6 +80,7 @@ cat << EOF > $RPM_BUILD_ROOT%{_sysconfdir}/ircd.motd
 
 Powered by PLD Linux Distibution IRC Server with IPv6 support!
 
+IRC:    irc.pld.org.pl irc6.pld.org.pl
 WWW:        http://www.pld.org.pl/
 FTP:        ftp://ftp.pld.org.pl/
 e-mail:      feedback@pld.org.pl
@@ -109,7 +112,7 @@ if [ -n "`id -u ircd 2>/dev/null`" ]; then
 		exit 1
 	fi
 else
-	%{_sbindir}/useradd -g ircd -d /etc/%{name} -u 75 -s /bin/true ircd 2> /dev/null
+	%{_sbindir}/useradd -g ircd -d /etc/%{name} -u 75 -s /bin/true -c "IRC Service account" ircd 2> /dev/null
 fi
 
 %post
