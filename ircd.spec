@@ -20,6 +20,8 @@ Prereq:		/sbin/chkconfig
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 Obsoletes:	ircd6
 
+%define		_sysconfdir	/etc/%{name}
+
 %description
 Ircd is the server (daemon) program for the Internet Relay Chat
 Program. This version supports IPv6, too.
