@@ -64,11 +64,11 @@ install -d $RPM_BUILD_ROOT{%{_sysconfdir}/ircd,/etc/rc.d/init.d}
 
 install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/%{name}
 
-tr ':' '%' < $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/example.conf > \
-	$RPM_BUILD_ROOT%{_sysconfdir}/%{name}/ircd.conf
-rm -f $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/example.conf
+tr ':' '%' < $RPM_BUILD_ROOT%{_sysconfdir}/example.conf > \
+	$RPM_BUILD_ROOT%{_sysconfdir}/ircd.conf
+rm -f $RPM_BUILD_ROOT%{_sysconfdir}/example.conf
 
-cat << EOF > $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/ircd.motd
+cat << EOF > $RPM_BUILD_ROOT%{_sysconfdir}/ircd.motd
 
 Powered by Polish Linux Distibution IRC Server with IPv6 support!
 
@@ -112,12 +112,12 @@ fi
 %doc doc/{2.10-New,2.9-New,Authors,ChangeLog,Etiquette,INSTALL.txt,SERVICE.txt,m4macros}.gz
 %attr(755,root,root) %{_bindir}/*
 %attr(755,root,root) %{_sbindir}/*
-%attr(750,root,ircd) %dir %{_sysconfdir}/%{name}
-%attr(644,root,ircd) %{_sysconfdir}/%{name}/ircd.motd
+%attr(750,root,ircd) %dir %{_sysconfdir}
+%attr(644,root,ircd) %{_sysconfdir}/ircd.motd
 %attr(750,ircd,ircd) %dir %{_var}/log/ircd
 %attr(644,ircd,ircd) %dir %{_var}/run/ircd.pid
 %attr(644,root,root) %{_mandir}/man[158]/*
 %attr(754,root,root) /etc/rc.d/init.d/%{name}
-%attr(644,root,root) %{_sysconfdir}/%{name}/ircd.m4
-%attr(640,root,ircd) %config(noreplace) %{_sysconfdir}/%{name}/ircd.conf
-%attr(640,root,ircd) %config(noreplace) %{_sysconfdir}/%{name}/iauth.conf
+%attr(644,root,root) %{_sysconfdir}/ircd.m4
+%attr(640,root,ircd) %config(noreplace) %{_sysconfdir}/ircd.conf
+%attr(640,root,ircd) %config(noreplace) %{_sysconfdir}/iauth.conf
