@@ -1,156 +1,166 @@
-Summary:	Internet Relay Chat Server
-Summary(pl):	Serwer IRC (Internet Relay Chat)
+Summary:	The most widely used IRC server (on IRCnet for instance)
 Name:		ircd
-Version:	2.10.3
+Version:	2.10.3p3
 Release:	1
 License:	GPL
 Group:		Daemons
 Source0:	ftp://ftp.irc.org/irc/server/irc%{version}.tgz
 Source1:	%{name}.init
-Source2:	%{name}.sysconfig
-Patch0:		%{name}-config.patch
-Patch1:		%{name}-linux.patch
-Patch2:		%{name}-no_libnsl.patch
+Source2:	irc2.10.3p1-config.h
 URL:		http://www.irc.org/
-BuildRequires:	zlib-devel
-BuildRequires:	ncurses-devel
-BuildRequires:	textutils
-BuildRequires:	autoconf
-Prereq:		rc-scripts
-Prereq:		/sbin/chkconfig
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
-Obsoletes:	ircd6
+PreReq:		/sbin/chkconfig
 
-%define		_sysconfdir	/etc/%{name}
-%define		_localstatedir	/var/lib/%{name}
+# Needed so the package doesn't provide all the glibc libs!
+AutoReqProv:	no
+Provides:	ircd
+
+%define _chroot /var/lib/ircd
 
 %description
-Ircd is the server (daemon) program for the Internet Relay Chat
-Program. This version supports IPv6, too.
-
-%description -l pl
-Ircd jest serwerem us³ugi IRC (Internet Relay Chat Program). Ta wersja
-wspiera tak¿e protokó³ IPv6.
+ircd is the server (daemon) program for the Internet Relay Chat
+Program. The ircd is a server in that its function is to "serve" the
+client program irc(1) with messages and commands. All commands and
+user messages are are passed directly to the ircd for processing and
+relaying to other ircd sites.
 
 %prep
-%setup -q -n irc%{version}
-%patch0 -p1
-%patch1 -p1
-%patch2 -p1
+%setup -q -n irc%version
 
 %build
-cd support
-	autoheader
-	autoconf
-cd ..
-
-%configure \
-	--logdir=%{_var}/log/%{name} \
+export CFLAGS="%{rpmcflags}"
+./configure \
+	--prefix=%{_prefix} \
+	--libdir=%{_chroot} \
+	--localstatedir=/run \
+--sysconfdir=%{_sysconfdir}/ircd \
+	--logdir=/log \
+	--mandir=%{_mandir} \
+	--with-zlib \
 	--enable-ip6 \
 	--enable-dsm
-
-cd "`support/config.guess`"
-%{__make} all
+MYARCH=`support/config.guess`
+install -m 644 %{SOURCE2} $MYARCH/config.h
+# make everything except the client
+%{__make} -C $MYARCH ircd iauth chkconf ircd-mkpasswd
+%{__make} -C $MYARCH ircdwatch ircd_var_dir=%{_chroot}/run
 
 %install
 rm -rf $RPM_BUILD_ROOT
+rm -rf %{buildroot}
+%{__make} -C `support/config.guess` prefix=%{buildroot}%{_prefix} \
+	server_man_dir=%{buildroot}%{_mandir}/man8 \
+	conf_man_dir=%{buildroot}%{_mandir}/man5 \
+	ircd_dir=%{buildroot}%{_chroot} \
+ircd_conf_dir=%{buildroot}%{_chroot}%{_sysconfdir}/ircd \
+	ircd_var_dir=%{buildroot}%{_chroot}/run \
+	ircd_log_dir=%{buildroot}%{_chroot}/log \
+	install-server
 
-cd "`support/config.guess`"
-install -d $RPM_BUILD_ROOT%{_var}/log/ircd
-install -d $RPM_BUILD_ROOT%{_libdir}/ircd
-install -d $RPM_BUILD_ROOT%{_sbindir}
-install -d $RPM_BUILD_ROOT%{_mandir}/man{1,3,5,8}
-install -d $RPM_BUILD_ROOT{%{_sysconfdir},/etc/rc.d/init.d,/etc/sysconfig}
-install -d $RPM_BUILD_ROOT%{_localstatedir}
+install -d %{buildroot}%{_chroot}/{etc,lib,usr/sbin,log,run}
+# install -D -m 711 %{SOURCE3} %{buildroot}%{_sbindir}/ircd-crypter
+install -D -m 755 $RPM_SOURCE_DIR/ircd.init %{buildroot}/etc/rc.d/init.d/ircd
 
-%{__make} install DESTDIR=$RPM_BUILD_ROOT \
-	     client_man_dir=$RPM_BUILD_ROOT%{_mandir}/man1 \
-	     conf_man_dir=$RPM_BUILD_ROOT%{_mandir}/man5 \
-	     server_man_dir=$RPM_BUILD_ROOT%{_mandir}/man8
+echo 'This is a poorly installed IRC server (MOTD not edited)' \
+> %{buildroot}%{_chroot}%{_sysconfdir}/ircd/ircd.motd
+touch %{buildroot}%{_chroot}%{_sysconfdir}/resolv.conf
+mv %{buildroot}%{_chroot}%{_sysconfdir}/ircd/example.conf \
+%{buildroot}%{_chroot}%{_sysconfdir}/ircd/ircd.conf.dist
+cp %{buildroot}%{_chroot}%{_sysconfdir}/ircd/ircd.conf.dist \
+%{buildroot}%{_chroot}%{_sysconfdir}/ircd/ircd.conf
 
-install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/%{name}
-install %{SOURCE2} $RPM_BUILD_ROOT/etc/sysconfig/%{name}
+# Chroot-related
+mv %{buildroot}%{_sbindir}/iauth %{buildroot}%{_chroot}%{_sbindir}
+ln -sf ../..%{_chroot}%{_sbindir}/iauth %{buildroot}%{_sbindir}
 
-tr ':' '%' < $RPM_BUILD_ROOT%{_sysconfdir}/example.conf > \
-	$RPM_BUILD_ROOT%{_sysconfdir}/ircd.conf
-rm -f $RPM_BUILD_ROOT%{_sysconfdir}/example.conf
+ln -sf ..%{_chroot}%{_sysconfdir}/ircd %{buildroot}%{_sysconfdir}/ircd
 
-cat << EOF > $RPM_BUILD_ROOT%{_sysconfdir}/ircd.motd
-
-Powered by PLD Linux Distibution IRC Server with IPv6 support!
-
-WWW:        http://www.pld.org.pl/
-FTP:        ftp://ftp.pld.org.pl/
-e-mail:      feedback@pld.org.pl
-
+# Borrowed from anonftp
+cat > %{buildroot}%{_chroot}%{_sysconfdir}/passwd << EOF
+root:*:0:0:::
+bin:*:1:1:::
 EOF
 
-mv -f $RPM_BUILD_ROOT%{_bindir}/irc $RPM_BUILD_ROOT%{_bindir}/ircs
-mv -f $RPM_BUILD_ROOT%{_mandir}/man1/irc.1 $RPM_BUILD_ROOT%{_mandir}/man1/ircs.1
+cat > %{buildroot}%{_chroot}%{_sysconfdir}/group << EOF
+root::0:
+bin::1:
+daemon::2:
+sys::3:
+adm::4:
+EOF
 
-gzip -9nf ../doc/{2.10-New,2.9-New,Authors,ChangeLog,Etiquette,SERVICE.txt,m4macros}
+%define LDSOVER 2
+%define LIBCVER 2.2.5
+%define LIBCRYPTVER 1
+%define LIBNSLVER 1
+%define LIBNSSVER 2
+%define LIBCSOVER 6
+%define LIBDLVER 2
 
-touch $RPM_BUILD_ROOT%{_localstatedir}/ircd.{pid,tune}
+%define _chlib %{buildroot}%{_chroot}/lib
 
-%clean
-rm -rf $RPM_BUILD_ROOT
+cp -fd %{_sysconfdir}/ld.so.cache %{buildroot}%{_chroot}%{_sysconfdir}
+cp -fd /lib/libc.so.%{LIBCSOVER} /lib/libc-%{LIBCVER}.so	%{_chlib}
+cp -fd /lib/ld-linux.so.%{LDSOVER} /lib/ld-%{LIBCVER}.so	%{_chlib}
+cp -fd /lib/libcrypt-%{LIBCVER}.so \
+	/lib/libcrypt.so.%{LIBCRYPTVER}				%{_chlib}
+cp -fd /lib/libnsl-%{LIBCVER}.so \
+	/lib/libnsl.so.%{LIBNSLVER}				%{_chlib}
+cp -fd /lib/libnss_compat-%{LIBCVER}.so \
+	/lib/libnss_compat.so.%{LIBNSSVER}			%{_chlib}
+cp -fd /lib/libnss_dns-%{LIBCVER}.so \
+	/lib/libnss_dns.so.%{LIBNSSVER}				%{_chlib}
+cp -fd /lib/libnss_files-%{LIBCVER}.so \
+	/lib/libnss_files.so.%{LIBNSSVER}			%{_chlib}
+cp -fd /lib/libresolv-%{LIBCVER}.so \
+	/lib/libresolv.so.%{LIBNSSVER}				%{_chlib}
+cp -fd /lib/libdl-%{LIBCVER}.so \
+	/lib/libdl.so.%{LIBDLVER}				%{_chlib}
+# strip %{_chlib}/*
 
-%pre
-if [ -n "`getgid ircd`" ]; then
-	if [ "`getgid ircd`" != "75" ]; then
-		echo "Warning: group ircd haven't gid=75. Correct this before installing ircd" 1>&2
-		exit 1
-	fi
-else
-	%{_sbindir}/groupadd -f -g 75 ircd 2> /dev/null
-fi
-if [ -n "`id -u ircd 2>/dev/null`" ]; then
-	if [ "`id -u ircd`" != "75" ]; then
-		echo "Warning: user ircd haven't uid=75. Correct this before installing ircd" 1>&2
-		exit 1
-	fi
-else
-	%{_sbindir}/useradd -g ircd -d /etc/%{name} -u 75 -s /bin/true ircd 2> /dev/null
-fi
 
 %post
 /sbin/chkconfig --add ircd
-if [ -f /var/lock/subsys/httpd ]; then
-	/etc/rc.d/init.d/ircd restart 1>&2
-else
-	echo "Run \"/etc/rc.d/init.d/ircd start\" to start IRC daemon."
-fi
+# Make the resolver happy
+install -m 644 /etc/resolv.conf %{_chroot}/etc
+# Touch the log files
+touch %{_chroot}/log/auth
+touch %{_chroot}/log/opers
+touch %{_chroot}/log/rejects
+touch %{_chroot}/log/users
+chmod 640 %{_chroot}/log/*
 
 %preun
-# If package is being erased for the last time.
-if [ "$1" = "0" ]; then
-	if [ -f /var/lock/subsys/ircd ]; then
-		/etc/rc.d/init.d/ircd stop 1>&2
-	fi
+if [ $1 = 0 ] ; then
+	/sbin/service ircd stop >/dev/null 2>&1
+	rm -f /var/ircd/run/*
 	/sbin/chkconfig --del ircd
 fi
 
-%postun
-# If package is being erased for the last time.
-if [ "$1" = "0" ]; then
-	%{_sbindir}/userdel ircd 2> /dev/null
-	%{_sbindir}/groupdel ircd 2> /dev/null
-fi
+%clean
+rm -rf %{buildroot}
 
 %files
 %defattr(644,root,root,755)
-%doc doc/*.gz
-%attr(755,root,root) %{_bindir}/*
+%doc doc/*
+%attr(755,root,root)/etc/rc.d/init.d/ircd
+%{_sysconfdir}/ircd
+%{_mandir}/*/*
 %attr(755,root,root) %{_sbindir}/*
-%attr(770,root,ircd) %dir %{_var}/log/ircd
-%attr(770,root,ircd) %dir %{_localstatedir}
-%attr(640,ircd,ircd) %ghost %{_localstatedir}/ircd.pid
-%attr(640,ircd,ircd) %ghost %{_localstatedir}/ircd.tune
-%attr(750,root,ircd) %dir %{_sysconfdir}
-%attr(660,root,ircd) %config(noreplace) %{_sysconfdir}/ircd.conf
-%attr(660,root,ircd) %config(noreplace) %{_sysconfdir}/iauth.conf
-%attr(664,root,ircd) %{_sysconfdir}/ircd.m4
-%attr(664,root,ircd) %{_sysconfdir}/ircd.motd
-%{_mandir}/man*/*
-%attr(754,root,root) /etc/rc.d/init.d/%{name}
-%attr(644,root,root) /etc/sysconfig/%{name}
+%attr(750, root, root) %dir %{_chroot}
+%{_chroot}/lib
+%dir %{_chroot}%{_sysconfdir}
+%dir %{_chroot}%{_prefix}
+%{_chroot}%{_sbindir}
+%{_chroot}%{_sysconfdir}/ld.so.cache
+%attr(444,root,root) %config %{_chroot}%{_sysconfdir}/passwd
+%attr(444,root,root) %config %{_chroot}%{_sysconfdir}/group
+%ghost %{_chroot}%{_sysconfdir}/resolv.conf
+%attr(750, root, root) %config %dir %{_chroot}%{_sysconfdir}/ircd
+%config(noreplace) %{_chroot}%{_sysconfdir}/ircd/ircd.conf
+%config %{_chroot}%{_sysconfdir}/ircd/ircd.conf.dist
+%config(noreplace) %{_chroot}%{_sysconfdir}/ircd/iauth.conf
+%{_chroot}%{_sysconfdir}/ircd/ircd.m4
+%config(noreplace) %{_chroot}%{_sysconfdir}/ircd/ircd.motd
+%dir %{_chroot}/log
+%dir %{_chroot}/run
