@@ -7,7 +7,7 @@ Summary:	Internet Relay Chat Server
 Summary(pl):	Serwer IRC (Internet Relay Chat)
 Name:		ircd
 Version:	2.10.3p3
-Release:	2	
+Release:	2
 License:	GPL
 Group:		Daemons
 Source0:	ftp://ftp.irc.org/irc/server/irc%{version}.tgz
@@ -20,7 +20,7 @@ Patch2:		%{name}-hm.patch
 # Orginal: http://jv.irc.cz/hoop3.diff - modfied because we have
 # MAX_CONNECTIONS already redefined in ircd-config.patch.
 # Also MIN_CHANOP_SERV, MIN_CHANOP_CHAN, MIN_CHANOP_USR to 0.
-Patch3:		ircd-hoop3.diff
+Patch3:		%{name}-hoop3.diff
 URL:		http://www.irc.org/
 BuildRequires:	zlib-devel
 BuildRequires:	ncurses-devel
