@@ -1,7 +1,7 @@
-diff -Naur irc2.10.3p1/common/os.h irc2.10.3p1-p/common/os.h
---- irc2.10.3p1/common/os.h	Wed Jun  7 00:32:49 2000
-+++ irc2.10.3p1-p/common/os.h	Thu Aug 24 16:27:35 2000
-@@ -137,6 +137,9 @@
+diff -ur irc2.11.0b14.orig/common/os.h irc2.11.0b14/common/os.h
+--- irc2.11.0b14.orig/common/os.h	2004-10-02 03:16:16.000000000 +0200
++++ irc2.11.0b14/common/os.h	2004-10-11 19:34:34.092789944 +0200
+@@ -139,6 +139,9 @@
  /* Linux 2.1.xx supports poll(), header files are not upto date yet */
  #  define POLLRDNORM 0x0040
  # endif
@@ -11,21 +11,16 @@ diff -Naur irc2.10.3p1/common/os.h irc2.10.3p1-p/common/os.h
  #endif
  
  #if HAVE_STROPTS_H
-diff -Naur irc2.10.3p1/support/Makefile.in irc2.10.3p1-p/support/Makefile.in
---- irc2.10.3p1/support/Makefile.in	Wed Jun  7 00:35:16 2000
-+++ irc2.10.3p1-p/support/Makefile.in	Thu Aug 24 16:27:35 2000
-@@ -67,21 +67,21 @@
+Only in irc2.11.0b14/common: os.h.orig
+diff -ur irc2.11.0b14.orig/support/Makefile.in irc2.11.0b14/support/Makefile.in
+--- irc2.11.0b14.orig/support/Makefile.in	2004-10-04 21:55:34.000000000 +0200
++++ irc2.11.0b14/support/Makefile.in	2004-10-11 19:35:50.530169696 +0200
+@@ -69,17 +69,17 @@
  # Directories definitions
  #
- # Directory in which to install irc.
--client_bin_dir = @bindir@
-+client_bin_dir = $(DESTDIR)@bindir@
  # Directory in which to install ircd, iauth, ircdwatch, mkpasswd and chkconf.
 -server_bin_dir = @sbindir@
 +server_bin_dir = $(DESTDIR)@sbindir@
- # Directory in which to install the client manual page.
--client_man_dir = @mandir@/man1
-+client_man_dir = $(DESTDIR)@mandir@/man1
  # Directory in which to install the configuration manual page.
 -conf_man_dir = @mandir@/man5
 +conf_man_dir = $(DESTDIR)@mandir@/man5
@@ -36,8 +31,8 @@ diff -Naur irc2.10.3p1/support/Makefile.in irc2.10.3p1-p/support/Makefile.in
 -ircd_conf_dir = @sysconfdir@
 +ircd_conf_dir = $(DESTDIR)@sysconfdir@
  # Directory where state files (ircd.pid, ircd.tune) live.
--ircd_var_dir = @localstatedir@
-+ircd_var_dir = $(DESTDIR)@localstatedir@
+-ircd_var_dir = @localstatedir@/run
++ircd_var_dir = $(DESTDIR)@localstatedir@/run
  # Directory where log files (users, opers, rejects and auth) live.
 -ircd_log_dir = @logdir@
 +ircd_log_dir = $(DESTDIR)@logdir@
