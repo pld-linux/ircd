@@ -10,9 +10,9 @@ URL:		http://www.xs4all.nl/~carlo17/ircd-dev/
 Source:		ftp://ftp.funet.fi/pub/unix/irc/server/irc%{version}.tgz
 Patch0:		%{name}-config.patch
 Patch1:		%{name}-linux.patch
-BuildPrereq:    zlib-devel
-BuildPrereq:	ncurses-devel
-BuildPrereq:	textutils
+BuildRequires:    zlib-devel
+BuildRequires:	ncurses-devel
+BuildRequires:	textutils
 BuildRoot:      /tmp/%{name}-%{version}-root
 Obsoletes:	ircd6
 
