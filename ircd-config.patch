@@ -1,6 +1,6 @@
-diff -ur irc2.10.3p7.orig/support/config.h.dist irc2.10.3p7/support/config.h.dist
---- irc2.10.3p7.orig/support/config.h.dist	2004-10-11 22:18:59.000000000 +0200
-+++ irc2.10.3p7/support/config.h.dist	2004-10-11 22:26:58.239240656 +0200
+diff -ur irc2.11.0b15.orig/support/config.h.dist irc2.11.0b15/support/config.h.dist
+--- irc2.11.0b15.orig/support/config.h.dist	2004-10-27 14:51:38.000000000 +0200
++++ irc2.11.0b15/support/config.h.dist	2004-10-27 14:52:19.774516864 +0200
 @@ -35,7 +35,7 @@
   * may want to log when ircdwatch reloads the config or when
   * ircd croaks and ircdwatch has to restart it
@@ -10,88 +10,86 @@ diff -ur irc2.10.3p7.orig/support/config.h.dist irc2.10.3p7/support/config.h.dis
  #ifdef IRCDWATCH_USE_SYSLOG
  # define IRCDWATCH_SYSLOG_IDENT     "ircdwatch"
  # define IRCDWATCH_SYSLOG_OPTIONS   (LOG_PID)
-@@ -120,7 +120,7 @@
+@@ -106,7 +106,7 @@
+  * Define this if you want to have TKLINE and UNTKLINE commands
+  * for opers and services.
   */
- #define	OPER_KILL
- #define	OPER_REHASH
--#undef	OPER_RESTART
-+#define	OPER_RESTART
- #undef	OPER_DIE
- #define	OPER_REMOTE
- #undef	LOCOP_REHASH
-@@ -138,7 +138,7 @@
-  * This should be at *least* 4: 2 listen ports (1 tcp, 1 udp)
-  *				1 dns port, 1 client
+-#define TKLINE
++#undef TKLINE
+ 
+ /* 
+  * Operator rights can be precisely defined in O:line flags. However
+@@ -133,7 +133,7 @@
+  * 1 server = 1 connection, 1 user = 1 connection.
+  * Due to various sanity checks during startup, minimum is 13.
   */
--#define MAXCONNECTIONS	16000
+-#define MAXCONNECTIONS	50
 +#define MAXCONNECTIONS	512
  
  /* MAXIMUM LINKS
   *
-@@ -175,7 +175,7 @@
+@@ -170,7 +170,7 @@
   * A HUB Server has many servers connect to it at the same as opposed
   * to a leaf which just has 1 server (typically the uplink).
   */
--/* #define	HUB */
+-#undef	HUB
 +#define	HUB
  
  #ifdef HUB
  /*
-@@ -238,7 +238,7 @@
-  * define this if you want to use crypted passwords for operators in your
-  * ircd.conf file. See contrib/mkpasswd/README for more details on this.
+@@ -257,12 +257,12 @@
+ /*
+  * Define this if you want to log failed /oper attempts.
   */
--#define	CRYPT_OPER_PASSWORD
-+#undef	CRYPT_OPER_PASSWORD
+-#undef FAILED_OPERLOG
++#define FAILED_OPERLOG
  
  /*
-  * If you want to store encrypted passwords in N-lines for server links,
-@@ -275,8 +275,8 @@
-  * define IRC_UID to that UID.  This should only be defined if you are running
-  * as root and even then perhaps not.
+  * Define this to make ircd create logfiles if they do not exist.
   */
--#undef	IRC_UID
--#undef	IRC_GID
+-#undef LOGFILES_ALWAYS_CREATE
++#define LOGFILES_ALWAYS_CREATE
+ 
+ /*
+  * Define this if you want to use crypted passwords for operators in your
+@@ -307,8 +307,8 @@
+  * This should only be defined if you are running as root...
+  * and even then perhaps not.
+  */
+-/* #undef	IRC_UID	65534 */
+-/* #undef	IRC_GID	65534 */
 +#define	IRC_UID	75
 +#define	IRC_GID	75
  
- #ifdef	notdef
- #define	IRC_UID	65534	/* eg for what to do to enable this feature */
-@@ -458,7 +458,7 @@
-    use ALIS instead, define this. Notice is sent BEFORE any output.
+ /*
+  * CLIENT_FLOOD
+@@ -352,7 +352,7 @@
+  * The library and the include files must have been found by configure,
+  * if you have installed the zlib after running configure, run it again.
   */
-  
--#define LIST_ALIS_NOTE "Usage of /list for listing all channels is deprecated. Please use \"/squery alis help\" instead."
-+#undef LIST_ALIS_NOTE
+-#undef ZIP_LINKS
++#define ZIP_LINKS
  
- /* If you want to send server IS_SUPPORT upon connect and along with
-    VERSION reply. Also moves redirect numerics from 5 to 10.
-@@ -489,8 +489,8 @@
- #define SPLIT_HANDLE
- 
- /* defines minimum for GLOBAL channels */
--#define SPLIT_SERV  20
--#define SPLIT_USERS 40000
-+#define SPLIT_SERV  0
-+#define SPLIT_USERS 0
- 
- /* Delay binding to listening ports with 'D' in second field until server 
-  * is out of split.
-@@ -519,7 +519,7 @@
- 
- /* define file which is used for saving k-lines added by /kline
+ /*
+  * Defining this will add an artificial 2 seconds delay for accepting
+@@ -473,8 +473,7 @@
+ /* Following notice is sent before and after /LIST output.
+  * If you do not want such behaviour, undefine.
   */
--#undef KLINE_FILE IRCDCONF_PATH
-+//#undef KLINE_FILE IRCDCONF_PATH
+-#define LIST_ALIS_NOTE "Usage of /list for listing all channels is " \
+-		       "deprecated. Please use \"/squery alis help\" instead."
++/* #undef LIST_ALIS_NOTE "Usage of /list for listing all channels is deprecated. Please use \"/squery alis help\" instead." */
  
- /* undef if you don't want to have Denied connection  because of open proxy */
- #undef IAUTH_VERBOSE_REJECTS
-@@ -539,7 +539,7 @@
- ** You may want to define this to disable "STATS k" for plain users
- ** and redirect them to some WWW page.
- */
--#define NOSTATSK "Please use http://www.irc.pl/kline instead."
-+#undef NOSTATSK
+ /* Define this to see when a channel topic was set and who it was set by.
+ ** Warning: eats memory (around 5MB)
+@@ -498,8 +497,8 @@
+  *
+  * Defining to 0 disables entering split-mode.
+  */
+-#define SPLIT_USERS	70000
+-#define SPLIT_SERVERS	30
++#define SPLIT_USERS	0
++#define SPLIT_SERVERS	0
  
- /*   STOP STOP STOP STOP STOP STOP STOP STOP STOP STOP STOP STOP STOP STOP  */
- /*   STOP STOP STOP STOP STOP STOP STOP STOP STOP STOP STOP STOP STOP STOP  */
+ /*
+ ** Notice sent to connecting users if the server is in the split-mode.
