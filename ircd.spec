@@ -2,7 +2,7 @@
 # Conditional build
 %bcond_with	crypt	# build with crypted passwords support
 #
-%define	_rc	b15
+%define	_rc	b16
 Summary:	Internet Relay Chat Server
 Summary(pl):	Serwer IRC (Internet Relay Chat)
 Name:		ircd
@@ -11,7 +11,7 @@ Release:	0.%{_rc}.1
 License:	GPL
 Group:		Daemons
 Source0:	ftp://ftp.irc.org/irc/server/BETA/irc%{version}%{_rc}.tgz
-# Source0-md5:	f4ebc9a5c445e0aec6fded0538d1c51c
+# Source0-md5:	34e190bf0c9dbb5a85a77bb9480fcd47
 Source1:	%{name}.init
 Source2:	%{name}.sysconfig
 Source3:	%{name}.logrotate
