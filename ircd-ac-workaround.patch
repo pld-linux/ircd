@@ -1,0 +1,11 @@
+--- irc2.10.3p6/support/configure.orig	2004-02-26 14:22:19.000000000 +0100
++++ irc2.10.3p6/support/configure	2004-03-30 22:16:11.573352016 +0200
+@@ -409,7 +409,7 @@
+   -zlib-library=* | --zlib-library=* | --zlib-librar=* | --zlib-libra=* \
+   | --zlib-libr=* | --zlib-lib=* | --zlib-li=* | --zlib-l=*)
+     irc_zlib_library="$ac_optarg" ;;
+-
++  --x-libraries=*) ;;
+   -*) { echo "configure: error: $ac_option: invalid option; use --help to show usage" 1>&2; exit 1; }
+     ;;
+ 
