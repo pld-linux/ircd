@@ -16,7 +16,7 @@ BuildPrereq:	ncurses-devel
 BuildPrereq:	textutils
 Requires:	rc-scripts
 Prereq:		/sbin/chkconfig
-BuildRoot:      /tmp/%{name}-%{version}-root
+BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 Obsoletes:	ircd6
 
 %description
@@ -108,7 +108,6 @@ if [ $1 = 0 ]; then
 	%{_sbindir}/userdel ircd 2> /dev/null
 	%{_sbindir}/groupdel ircd 2> /dev/null
 fi
-
 
 %files
 %defattr(644,root,root)
