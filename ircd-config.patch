@@ -1,6 +1,6 @@
-diff -ur irc2.11.0b14.orig/support/config.h.dist irc2.11.0b14/support/config.h.dist
---- irc2.11.0b14.orig/support/config.h.dist	2004-10-11 19:42:06.000000000 +0200
-+++ irc2.11.0b14/support/config.h.dist	2004-10-11 19:49:51.039392872 +0200
+diff -ur irc2.11.0b15.orig/support/config.h.dist irc2.11.0b15/support/config.h.dist
+--- irc2.11.0b15.orig/support/config.h.dist	2004-10-27 14:51:38.000000000 +0200
++++ irc2.11.0b15/support/config.h.dist	2004-10-27 14:52:19.774516864 +0200
 @@ -35,7 +35,7 @@
   * may want to log when ircdwatch reloads the config or when
   * ircd croaks and ircdwatch has to restart it
@@ -82,12 +82,12 @@ diff -ur irc2.11.0b14.orig/support/config.h.dist irc2.11.0b14/support/config.h.d
  
  /* Define this to see when a channel topic was set and who it was set by.
  ** Warning: eats memory (around 5MB)
-@@ -494,8 +493,8 @@
-  * users/servers in your TLD (or some other close group).
+@@ -498,8 +497,8 @@
+  *
   * Defining to 0 disables entering split-mode.
   */
--#define SPLIT_USERS	40000
--#define SPLIT_SERVERS	20
+-#define SPLIT_USERS	70000
+-#define SPLIT_SERVERS	30
 +#define SPLIT_USERS	0
 +#define SPLIT_SERVERS	0
  
