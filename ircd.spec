@@ -2,7 +2,7 @@ Summary:	Internet Relay Chat Server
 Summary(pl):	Serwer IRC (Internet Relay Chat)
 Name:		ircd
 Version:	2.10.3p7
-Release:	1
+Release:	2
 License:	GPL
 Group:		Daemons
 Source0:	ftp://ftp.irc.org/irc/server/irc%{version}.tgz
@@ -34,6 +34,8 @@ Requires(postun):	/usr/sbin/userdel
 Requires(postun):	/usr/sbin/groupdel
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 Obsoletes:	ircd-hybrid
+Obsoletes:	ircd-ptlink
+Obsoletes:	bircd
 
 %define		_sysconfdir	/etc/%{name}
 %define		_localstatedir	/var/lib/%{name}
