@@ -1,13 +1,12 @@
 #
 # Conditional build:
 %bcond_with	hm	# with soper/hawkmod patch, but without hoop3
-%bcond_with	ipv6	# without IPv6 support
 #
 Summary:	Internet Relay Chat Server
 Summary(pl):	Serwer IRC (Internet Relay Chat)
 Name:		ircd
 Version:	2.10.3p6
-Release:	3
+Release:	4
 License:	GPL
 Group:		Daemons
 Source0:	ftp://ftp.irc.org/irc/server/irc%{version}.tgz
@@ -71,29 +70,53 @@ cp -f /usr/share/automake/config.* support
 #	autoconf
 #cd ..
 
+mdir=$(pwd)
+mkdir .ircd6
+cp -a * .ircd6
+
+cd .ircd6
 # cannot regenerate, so use workaround
 export ac_cv_lib_nsl_socket=no
 %configure2_13 \
 	--logdir=%{_var}/log/%{name} \
 	--enable-dsm \
 	--with-zlib \
-	%{?with_ipv6:--enable-ip6}
+	--enable-ip6
+
+cd "`support/config.guess`"
+%{__make} all
+
+cd $mdir
+# cannot regenerate, so use workaround
+export ac_cv_lib_nsl_socket=no
+%configure2_13 \
+        --logdir=%{_var}/log/%{name} \
+        --enable-dsm \
+        --with-zlib
 
 cd "`support/config.guess`"
 %{__make} all
 
 %install
+tdir=$(support/config.guess)
+
 rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT{%{_var}/log/{,archiv/}ircd,%{_libdir}/ircd,%{_sbindir},%{_mandir}/man{1,3,5,8}} \
 	$RPM_BUILD_ROOT{%{_sysconfdir},/etc/{rc.d/init.d,sysconfig,logrotate.d}} \
 	$RPM_BUILD_ROOT%{_localstatedir}
-cd "`support/config.guess`"
+cd $tdir
 
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT \
 	client_man_dir=$RPM_BUILD_ROOT%{_mandir}/man1 \
 	conf_man_dir=$RPM_BUILD_ROOT%{_mandir}/man5 \
 	server_man_dir=$RPM_BUILD_ROOT%{_mandir}/man8
+
+cd ..
+install .ircd6/${tdir}/irc $RPM_BUILD_ROOT%{_bindir}/ircs6
+for f in chkconf iauth ircd ircd-mkpasswd ircdwatch; do
+	install .ircd6/${tdir}/${f} $RPM_BUILD_ROOT%{_sbindir}/${f}.6
+done
 
 install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/%{name}
 install %{SOURCE2} $RPM_BUILD_ROOT/etc/sysconfig/%{name}
@@ -105,7 +128,7 @@ rm -f $RPM_BUILD_ROOT%{_sysconfdir}/example.conf
 
 cat << EOF > $RPM_BUILD_ROOT%{_sysconfdir}/ircd.motd
 
-Powered by PLD Linux Distribution IRC Server%{?with_ipv6: with IPv6 support}!
+Powered by PLD Linux Distribution IRC Server!
 
 WWW:        http://www.pld-linux.org/
 FTP:        ftp://ftp.pld-linux.org/
