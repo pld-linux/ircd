@@ -1,28 +1,22 @@
-#
-# Conditional build:
-%bcond_with	hm	# with soper/hawkmod patch, but without hoop3
-#
 Summary:	Internet Relay Chat Server
 Summary(pl):	Serwer IRC (Internet Relay Chat)
 Name:		ircd
-Version:	2.10.3p6
-Release:	4
+Version:	2.10.3p7
+Release:	1
 License:	GPL
 Group:		Daemons
 Source0:	ftp://ftp.irc.org/irc/server/irc%{version}.tgz
-# Source0-md5:	90f8c27e9a24b00488a25ef8e668546f
+# Source0-md5:	47fbf2856fa058686dfaa5f446154296
 Source1:	%{name}.init
 Source2:	%{name}.sysconfig
 Source3:	%{name}.logrotate
-Patch0:		%{name}-config.patch
-Patch1:		%{name}-linux.patch
-Patch2:		%{name}-hm.patch
-# Orginal: http://jv.irc.cz/hoop3.diff - modified because we have
-# MAX_CONNECTIONS already redefined in ircd-config.patch.
-# Also MIN_CHANOP_SERV, MIN_CHANOP_CHAN, MIN_CHANOP_USR to 0.
-Patch3:		%{name}-hoop3.diff
-Patch4:		%{name}-ac-workaround.patch
-Patch5:		%{name}-conf_delimiter_4_easy_upgrade.patch
+Patch0:		%{name}-linux.patch
+# Hemp2+DK+B5 patch
+# URL: http://akson.sgh.waw.pl/~chopin/ircd/patches/p7--hemp2+DK+B5.diff
+Patch1:		%{name}-hemp2+DK+B5.diff
+Patch2:		%{name}-ac-workaround.patch
+Patch3:		%{name}-conf_delimiter_4_easy_upgrade.patch
+Patch4:		%{name}-config.patch
 URL:		http://www.irc.org/
 #BuildRequires:	autoconf
 BuildRequires:	automake
@@ -56,10 +50,9 @@ jest tak¿e wersja obs³uguj±ca IPv6.
 %setup -q -n irc%{version}
 %patch0 -p1
 %patch1 -p1
-%{?with_hm:%patch2 -p1}
-%{!?with_hm:%patch3 -p1}
+%patch2 -p1
+%patch3 -p1
 %patch4 -p1
-%patch5 -p1
 
 %build
 cp -f /usr/share/automake/config.* support
