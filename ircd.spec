@@ -1,12 +1,8 @@
-#
-# Conditional build
-%bcond_with	crypt	# build with crypted passwords support
-#
 Summary:	Internet Relay Chat Server
 Summary(pl):	Serwer IRC (Internet Relay Chat)
 Name:		ircd
 Version:	2.10.3p7
-Release:	4
+Release:	6
 License:	GPL
 Group:		Daemons
 Source0:	ftp://ftp.irc.org/irc/server/irc%{version}.tgz
@@ -14,7 +10,6 @@ Source0:	ftp://ftp.irc.org/irc/server/irc%{version}.tgz
 Source1:	%{name}.init
 Source2:	%{name}.sysconfig
 Source3:	%{name}.logrotate
-Source4:	%{name}.conf
 Patch0:		%{name}-linux.patch
 # Hemp2+DK+B5 patch
 # URL: http://akson.sgh.waw.pl/~chopin/ircd/patches/p7--hemp2+DK+B5.diff
@@ -22,8 +17,6 @@ Patch1:		%{name}-hemp2+DK+B5.diff
 Patch2:		%{name}-ac-workaround.patch
 Patch3:		%{name}-conf_delimiter_4_easy_upgrade.patch
 Patch4:		%{name}-config.patch
-Patch5:		%{name}-autoconnect.patch
-Patch6:		%{name}-crypt.patch
 URL:		http://www.irc.org/
 #BuildRequires:	autoconf
 BuildRequires:	automake
@@ -52,11 +45,11 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
 Ircd is the server (daemon) program for the Internet Relay Chat
-Program. It has built-in IPv6 support.
+Program. There is also version with IPv6 support enclosed.
 
 %description -l pl
-Ircd jest serwerem us³ugi IRC (Internet Relay Chat Program). Zawiera
-wsparcie dla IPv6.
+Ircd jest serwerem us³ugi IRC (Internet Relay Chat Program). Za³±czona
+jest tak¿e wersja obs³uguj±ca IPv6.
 
 %prep
 %setup -q -n irc%{version}
@@ -65,12 +58,19 @@ wsparcie dla IPv6.
 %patch2 -p1
 %patch3 -p1
 %patch4 -p1
-%patch5 -p1
-%{?with_crypt:%patch6 -p1}
 
 %build
 cp -f /usr/share/automake/config.* support
+#cd support
+#	autoheader
+#	autoconf
+#cd ..
 
+mdir=$(pwd)
+mkdir .ircd6
+cp -a * .ircd6
+
+cd .ircd6
 # cannot regenerate, so use workaround
 export ac_cv_lib_nsl_socket=no
 %configure2_13 \
@@ -80,7 +80,18 @@ export ac_cv_lib_nsl_socket=no
 	--enable-ip6
 
 cd "`support/config.guess`"
-%{__make} server
+%{__make} all
+
+cd $mdir
+# cannot regenerate, so use workaround
+export ac_cv_lib_nsl_socket=no
+%configure2_13 \
+	--logdir=%{_var}/log/%{name} \
+	--enable-dsm \
+	--with-zlib
+
+cd "`support/config.guess`"
+%{__make} all
 
 %install
 tdir=$(support/config.guess)
@@ -91,18 +102,23 @@ install -d $RPM_BUILD_ROOT{%{_var}/log/{,archiv/}ircd,%{_libdir}/ircd,%{_sbindir
 	$RPM_BUILD_ROOT%{_localstatedir}
 cd $tdir
 
-%{__make} install-server \
+%{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT \
 	client_man_dir=$RPM_BUILD_ROOT%{_mandir}/man1 \
 	conf_man_dir=$RPM_BUILD_ROOT%{_mandir}/man5 \
 	server_man_dir=$RPM_BUILD_ROOT%{_mandir}/man8
 
 cd ..
+install .ircd6/${tdir}/irc $RPM_BUILD_ROOT%{_bindir}/ircs6
+for f in chkconf iauth ircd ircd-mkpasswd ircdwatch; do
+	install .ircd6/${tdir}/${f} $RPM_BUILD_ROOT%{_sbindir}/${f}6
+done
 
 install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/%{name}
 install %{SOURCE2} $RPM_BUILD_ROOT/etc/sysconfig/%{name}
 install %{SOURCE3} $RPM_BUILD_ROOT/etc/logrotate.d/%{name}
-install %{SOURCE4} $RPM_BUILD_ROOT%{_sysconfdir}/%{name}.conf
+
+tr ':' '%' < $RPM_BUILD_ROOT%{_sysconfdir}/example.conf > $RPM_BUILD_ROOT%{_sysconfdir}/ircd.conf
 
 rm -f $RPM_BUILD_ROOT%{_sysconfdir}/example.conf
 
@@ -115,6 +131,9 @@ FTP:        ftp://ftp.pld-linux.org/
 e-mail:      feedback@pld-linux.org
 
 EOF
+
+mv -f $RPM_BUILD_ROOT%{_bindir}/irc $RPM_BUILD_ROOT%{_bindir}/ircs
+mv -f $RPM_BUILD_ROOT%{_mandir}/man1/irc.1 $RPM_BUILD_ROOT%{_mandir}/man1/ircs.1
 
 touch $RPM_BUILD_ROOT%{_localstatedir}/ircd.{pid,tune}
 
@@ -170,6 +189,7 @@ fi
 %defattr(644,root,root,755)
 %doc doc/{2.10-New,2.9-New,Authors,ChangeLog,Etiquette,SERVICE.txt,m4macros}
 %doc doc/{example.conf,rfc*.txt,README,RELEASE_{LOG,NOTES}}
+%attr(755,root,root) %{_bindir}/*
 %attr(755,root,root) %{_sbindir}/*
 %attr(770,root,ircd) %dir %{_var}/log/ircd
 %attr(770,root,ircd) %dir %{_var}/log/archiv/ircd
