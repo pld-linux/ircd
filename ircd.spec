@@ -123,8 +123,8 @@ fi
 %doc doc/*.gz
 %attr(755,root,root) %{_bindir}/*
 %attr(755,root,root) %{_sbindir}/*
-%attr(750,ircd,ircd) %dir %{_var}/log/ircd
-%attr(750,ircd,ircd) %dir %{_localstatedir}
+%attr(770,root,ircd) %dir %{_var}/log/ircd
+%attr(770,root,ircd) %dir %{_localstatedir}
 %attr(640,ircd,ircd) %ghost %{_localstatedir}/ircd.pid
 %attr(640,ircd,ircd) %ghost %{_localstatedir}/ircd.tune
 %attr(750,root,ircd) %dir %{_sysconfdir}
