@@ -14,9 +14,10 @@ Patch0:		%{name}-config.patch
 Patch1:		%{name}-linux.patch
 Patch2:		%{name}-no_libnsl.patch
 URL:		http://www.irc.org/
-BuildPrereq:	zlib-devel
-BuildPrereq:	ncurses-devel
-BuildPrereq:	textutils
+BuildRequires:	zlib-devel
+BuildRequires:	ncurses-devel
+BuildRequires:	textutils
+BuildRequires:	autoconf
 Prereq:		rc-scripts
 Prereq:		/sbin/chkconfig
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
@@ -82,7 +83,7 @@ Powered by Polish Linux Distibution IRC Server with IPv6 support!
 
 WwW:        http://www.pld.org.pl/	http://www.ipv6.pld.org.pl/
 FTP:        ftp://ftp.pld.org.pl/
-EMail:       pld-list@pld.org.pl
+EMail:       feedback@pld.org.pl
 
 EOF
 
@@ -113,6 +114,7 @@ if [ -n "`id -u ircd 2>/dev/null`" ]; then
 else
 	%{_sbindir}/useradd -g ircd -d /etc/%{name} -u 75 -s /bin/true ircd 2> /dev/null
 fi
+
 %post
 /sbin/chkconfig --add ircd
 if [ -f /var/lock/subsys/httpd ]; then
@@ -123,7 +125,7 @@ fi
 
 %preun
 # If package is being erased for the last time.
-if [ $1 = 0 ]; then
+if [ "$1" = "0" ]; then
 	if [ -f /var/lock/subsys/ircd ]; then
 		/etc/rc.d/init.d/ircd stop 1>&2
 	fi
@@ -132,7 +134,7 @@ fi
 
 %postun
 # If package is being erased for the last time.
-if [ $1 = 0 ]; then
+if [ "$1" = "0" ]; then
 	%{_sbindir}/userdel ircd 2> /dev/null
 	%{_sbindir}/groupdel ircd 2> /dev/null
 fi
