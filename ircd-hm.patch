@@ -824,3 +824,63 @@ diff -cr irc2.10.3p3/ircd/s_user.c irc2.10.3p3+HM2/ircd/s_user.c
   		    {
   			if (len + strlen(chptr->chname)
   			    > (size_t) BUFSIZE - 4 - mlen)
+diff -cr irc2.10.3p3/support/config.h.dist irc2.10.3p3+HM2/support/config.h.dist
+*** irc2.10.3p3/support/config.h.dist	Fri Oct 19 23:51:15 2001
+--- irc2.10.3p3+HM2/support/config.h.dist	Mon Nov  5 20:03:37 2001
+***************
+*** 383,388 ****
+--- 383,436 ----
+   */
+  #undef	CLONE_CHECK
+  
++ /*
++  * Definitions for HM2 patch by Hawk
++  * All #undef'ed because this gives too much power for ircops and breaks
++  * users privacy. This is EVIL! Use with care.
++  */
++ 
++ /* If defined, ircop will always get results of WHO command.
++  */
++ #define	OPER_WHO
++ #undef	LOCOP_WHO
++ 
++ /* If defined, ircop will see all secret channels user is on in WHOIS.
++  */
++ #define	OPER_WHOIS
++ #undef	LOCOP_WHOIS
++ 
++ /* If defined, ircop will see all secret channels in LIST.
++  */
++ #define	OPER_LIST
++ #undef	LOCOP_LIST
++ 
++ /* If this is defined, ircop will always join the channel bypassing
++  * invite only, key protection, user limit and bans.
++  */
++ #define	OPER_JOIN
++ #undef	LOCOP_JOIN
++ 
++ /* SMODE command allows ircop to set any server mode for channels and/or users
++  */
++ #define	OPER_SMODE
++ #undef	LOCOP_SMODE
++ 
++ 
++ /* CLEAN command does a mass server deop on a specified channel and joins
++  * ircop to that channel with server op.
++  */
++ #define	OPER_CLEAN
++ #undef	LOCOP_CLEAN
++ 
++ #if defined(OPER_SMODE) || defined(OPER_CLEAN)
++ /*
++  * Enable &SMODE chan where all server modes will be logged. Only ircops
++  * may join this chan.
++  */
++ # define	SMODE_CHAN
++ # undef	LOCOP_SMODE_CHAN
++ #endif
++ 
+  /*   STOP STOP STOP STOP STOP STOP STOP STOP STOP STOP STOP STOP STOP STOP  */
+  /*   STOP STOP STOP STOP STOP STOP STOP STOP STOP STOP STOP STOP STOP STOP  */
+  /*   STOP STOP STOP STOP STOP STOP STOP STOP STOP STOP STOP STOP STOP STOP  */
