@@ -7,7 +7,7 @@ Summary:	Internet Relay Chat Server
 Summary(pl):	Serwer IRC (Internet Relay Chat)
 Name:		ircd
 Version:	2.11.0
-Release:	0.%{_rc}.2
+Release:	0.%{_rc}.3
 License:	GPL
 Group:		Daemons
 Source0:	ftp://ftp.irc.org/irc/server/BETA/irc%{version}%{_rc}.tgz
@@ -63,9 +63,7 @@ jest tak¿e wersja obs³uguj±ca IPv6.
 %patch2 -p1
 %{?with_crypt:%patch3 -p1}
 %patch4 -p1
-%ifarch amd64 ppc
 %patch5 -p1
-%endif
 
 %build
 cp -f /usr/share/automake/config.* support
