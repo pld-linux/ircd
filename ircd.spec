@@ -46,13 +46,11 @@ Obsoletes:	ircd-hybrid
 
 %description
 Ircd is the server (daemon) program for the Internet Relay Chat
-Program. IPv6 support is broken (server won't run on non-IPv6 system),
-so it's disabled.
+Program. There is also version with IPv6 support enclosed.
 
 %description -l pl
-Ircd jest serwerem us³ugi IRC (Internet Relay Chat Program). Wsparcie
-dla protoko³u IPv6 jest wy³±czone, gdy¿ wtedy serwer nie dzia³a na
-systemach bez niego.
+Ircd jest serwerem us³ugi IRC (Internet Relay Chat Program). Za³±czona
+jest tak¿e wersja obs³uguj±ca IPv6.
 
 %prep
 %setup -q -n irc%{version}
