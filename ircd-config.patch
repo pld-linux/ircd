@@ -1,28 +1,7 @@
-diff -urN irc2.10.2p1.orig/support/config.h.dist irc2.10.2p1/support/config.h.dist
---- irc2.10.2p1.orig/support/config.h.dist	Tue Jul 13 11:01:04 1999
-+++ irc2.10.2p1/support/config.h.dist	Tue Jul 13 11:07:24 1999
-@@ -64,13 +64,13 @@
-  * these are only the recommened names and paths. Change as needed.
-  * You must define these to something, even if you don't really want them.
-  */
--#define	CPATH	"ircd.conf"	/* configuration file */
--#define	MPATH	"ircd.motd"	/* motd file */
--#define	LPATH	"ircd.log"	/* debugging log */
--#define	PPATH	"ircd.pid"	/* PID file */
--#define	TPATH	"ircd.tune"	/* tuning file */
--#define	QPATH	"iauth.conf"	/* authentication slave configuration file */
--#define	OPATH	"iauth.log"	/* authentication slave debugging log */
-+#define	CPATH	"/etc/ircd/ircd.conf"	/* configuration file */
-+#define	MPATH	"/etc/ircd/ircd.motd"	/* motd file */
-+#define	LPATH	"/var/log/ircd/ircd.log"	/* debugging log */
-+#define	PPATH	"/var/run/ircd.pid"	/* PID file */
-+#define	TPATH	"/etc/ircd/ircd.tune"	/* tuning file */
-+#define	QPATH	"/etc/ircd/iauth.conf"	/* authentication slave configuration file */
-+#define	OPATH	"/var/log/ircd/iauth.log"	/* authentication slave debugging log */
- 
- /*
-  * If you don't want the server to keep reading the MOTD file from the disk,
-@@ -150,7 +150,7 @@
+diff -urN irc2.10.3.orig/support/config.h.dist irc2.10.3/support/config.h.dist
+--- irc2.10.3.orig/support/config.h.dist	Tue Sep  7 21:37:13 1999
++++ irc2.10.3/support/config.h.dist	Wed Sep  8 14:10:38 1999
+@@ -118,7 +118,7 @@
   * if 'OPER_x' is undefined so you can't give local operators more rights
   * than global ones.
   */
@@ -31,7 +10,7 @@ diff -urN irc2.10.2p1.orig/support/config.h.dist irc2.10.2p1/support/config.h.di
  #define	OPER_REHASH
  #undef	OPER_RESTART
  #define	OPER_DIE
-@@ -303,7 +303,7 @@
+@@ -262,7 +262,7 @@
   * define this if you want to use crypted passwords for operators in your
   * ircd.conf file. See contrib/mkpasswd/README for more details on this.
   */
@@ -40,7 +19,7 @@ diff -urN irc2.10.2p1.orig/support/config.h.dist irc2.10.2p1/support/config.h.di
  
  /*
   * If you want to store encrypted passwords in N-lines for server links,
-@@ -311,7 +311,7 @@
+@@ -270,7 +270,7 @@
   * need not be the same for both, as long as hte opposite end has the
   * right password in the opposite line.  See INSTALL doc for more details.
   */
@@ -49,14 +28,36 @@ diff -urN irc2.10.2p1.orig/support/config.h.dist irc2.10.2p1/support/config.h.di
  
  /*
   * define this if you enable summon and if you want summon to look for the
-@@ -340,8 +340,8 @@
+@@ -299,8 +299,8 @@
   * define IRC_UID to that UID.  This should only be defined if you are running
   * as root and even then perhaps not.
   */
 -#undef	IRC_UID
 -#undef	IRC_GID
-+#define	IRC_UID	75
-+#define	IRC_GID	75
++#define	IRC_UID 75
++#define	IRC_GID 75
  
  #ifdef	notdef
  #define	IRC_UID	65534	/* eg for what to do to enable this feature */
+@@ -352,7 +352,7 @@
+  * The library and the include files must have been found by configure,
+  * if you have installed the zlib after running configure, run it again.
+  */
+-#undef ZIP_LINKS
++#define ZIP_LINKS
+ 
+ /*
+  * Defining this will add an artificial 2 seconds delay for accepting
+diff -urN irc2.10.3.orig/support/iauth.conf irc2.10.3/support/iauth.conf
+--- irc2.10.3.orig/support/iauth.conf	Tue Sep  7 21:37:13 1999
++++ irc2.10.3/support/iauth.conf	Wed Sep  8 14:11:12 1999
+@@ -5,7 +5,8 @@
+ #
+ 
+ # If iauth timeouts, then reject user
+-notimeout
++# notimeout
++
+ # This makes the IRC server require that iauth performs the authentication
+ # in order for a new user connection to be accepted
+ required

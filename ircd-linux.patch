@@ -1,129 +1,244 @@
-diff -urN irc2.10.2p1.orig/common/os.h irc2.10.2p1/common/os.h
---- irc2.10.2p1.orig/common/os.h	Tue Jul 13 11:18:35 1999
-+++ irc2.10.2p1/common/os.h	Tue Jul 13 11:22:46 1999
-@@ -37,6 +37,7 @@
- 
- #if HAVE_SYS_TYPES_H
- # include <sys/types.h>
-+# include <asm/types.h>
+diff -urN irc2.10.3.orig/common/os.h irc2.10.3/common/os.h
+--- irc2.10.3.orig/common/os.h	Tue Sep  7 21:37:11 1999
++++ irc2.10.3/common/os.h	Wed Sep  8 00:22:07 1999
+@@ -137,6 +137,9 @@
+ /* Linux 2.1.xx supports poll(), header files are not upto date yet */
+ #  define POLLRDNORM 0x0040
+ # endif
++# if linux && !defined(POLLWRNORM)
++#  define POLLWRNORM 0x0100
++# endif
  #endif
  
- #if HAVE_SYS_BITYPES_H
-diff -urN irc2.10.2p1.orig/irc/c_bsd.c irc2.10.2p1/irc/c_bsd.c
---- irc2.10.2p1.orig/irc/c_bsd.c	Tue Jul 13 11:18:36 1999
-+++ irc2.10.2p1/irc/c_bsd.c	Tue Jul 13 11:38:00 1999
-@@ -28,6 +28,8 @@
- #include "c_externs.h"
- #undef C_BSD_C
+ #if HAVE_STROPTS_H
+@@ -483,9 +486,13 @@
+ # if USE_CURSESX && HAVE_CURSESX_H
+ #  include <cursesX.h>
+ # endif
+-# if (USE_NCURSES || USE_CURSES) && HAVE_CURSES_H
++# if (USE_NCURSES || USE_CURSES) && (HAVE_CURSES_H || HAVE_NCURSES_CURSES_H)
+ #  if HAVE_NCURSES_H
+ #   include <ncurses.h>
++#  elif HAVE_NCURSES_NCURSES_H
++#   include <ncurses/ncurses.h>
++#  elif HAVE_NCURSES_CURSES_H
++#   include <ncurses/curses.h>
+ #  else
+ #   include <curses.h>
+ #  endif
+@@ -729,6 +736,10 @@
+ # define	S_ADDR		s6_addr
+ # define	IN_ADDR		in6_addr
  
-+#include <ncurses/ncurses.h>
++# if !defined(__u32) && defined(HAVE_ASM_TYPES_H)
++#  include <asm/types.h>
++# endif
 +
- #ifdef AUTOMATON
- #ifdef DOCURSES
- #undef DOCURSES
-diff -urN irc2.10.2p1.orig/irc/c_msg.c irc2.10.2p1/irc/c_msg.c
---- irc2.10.2p1.orig/irc/c_msg.c	Tue Jul 13 11:18:36 1999
-+++ irc2.10.2p1/irc/c_msg.c	Tue Jul 13 11:41:10 1999
-@@ -28,6 +28,8 @@
- #include "c_externs.h"
- #undef C_MSG_C
+ # ifndef uint32_t
+ #  define uint32_t __u32
+ # endif
+@@ -743,7 +754,7 @@
+ #  endif
+ # endif
  
-+#include <ncurses/ncurses.h>
+-# if defined(linux)
++# if defined(linux) && ((defined(__GLIBC__) && __GLIBC_MINOR__ < 1) || !defined(__GLIBC__))
+ static const struct in6_addr in6addr_any={ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+ 						0, 0, 0, 0, 0};
+ # endif
+diff -urN irc2.10.3.orig/support/Makefile.in irc2.10.3/support/Makefile.in
+--- irc2.10.3.orig/support/Makefile.in	Tue Sep  7 21:37:13 1999
++++ irc2.10.3/support/Makefile.in	Wed Sep  8 00:35:00 1999
+@@ -67,21 +67,21 @@
+ # Directories definitions
+ #
+ # Directory in which to install irc.
+-client_bin_dir = @bindir@
++client_bin_dir = $(DESTDIR)@bindir@
+ # Directory in which to install ircd, iauth, ircdwatch, mkpasswd and chkconf.
+-server_bin_dir = @sbindir@
++server_bin_dir = $(DESTDIR)@sbindir@
+ # Directory in which to install the client manual page.
+-client_man_dir = @mandir@/man1
++client_man_dir = $(DESTDIR)@mandir@/man1
+ # Directory in which to install the configuration manual page.
+-conf_man_dir = @mandir@/man5
++conf_man_dir = $(DESTDIR)@mandir@/man5
+ # Directory in which to install the server manual page.
+-server_man_dir = @mandir@/man8
++server_man_dir = $(DESTDIR)@mandir@/man8
+ # Directory where config files (ircd.conf, ircd.motd and iauth.conf) live.
+-ircd_conf_dir = @sysconfdir@
++ircd_conf_dir = $(DESTDIR)@sysconfdir@
+ # Directory where state files (ircd.pid, ircd.tune) live.
+-ircd_var_dir = @localstatedir@
++ircd_var_dir = $(DESTDIR)@localstatedir@
+ # Directory where log files (users, opers, rejects and auth) live.
+-ircd_log_dir = @logdir@
++ircd_log_dir = $(DESTDIR)@logdir@
+ 
+ #
+ # Most of these PATHs are hardcoded in the binaries.
+diff -urN irc2.10.3.orig/support/configure.in irc2.10.3/support/configure.in
+--- irc2.10.3.orig/support/configure.in	Tue Sep  7 22:25:18 1999
++++ irc2.10.3/support/configure.in	Wed Sep  8 00:28:03 1999
+@@ -734,66 +734,107 @@
+ 
+ AC_DEFUN(IRC_IP6,
+ [AC_ARG_ENABLE(ip6, [  --enable-ip6            enables IPv6])
+-if test "x$enable_ip6" != x; then
 +
- char	mybuf[513];
- 
- void m_die() {
-diff -urN irc2.10.2p1.orig/irc/edit.c irc2.10.2p1/irc/edit.c
---- irc2.10.2p1.orig/irc/edit.c	Tue Jul 13 11:18:36 1999
-+++ irc2.10.2p1/irc/edit.c	Tue Jul 13 11:39:13 1999
-@@ -28,6 +28,8 @@
- #include "c_externs.h"
- #undef EDIT_C
- 
-+#include <ncurses/ncurses.h>
++ipv6type=unknown
++ipv6lib=none
++ipv6trylibc=no
 +
- #define FROM_START 0
- #define FROM_END   1
- #define RELATIVE   2
-diff -urN irc2.10.2p1.orig/irc/irc.c irc2.10.2p1/irc/irc.c
---- irc2.10.2p1.orig/irc/irc.c	Tue Jul 13 11:18:36 1999
-+++ irc2.10.2p1/irc/irc.c	Tue Jul 13 11:39:41 1999
-@@ -28,6 +28,8 @@
- #include "c_externs.h"
- #undef IRC_C
- 
-+#include <ncurses/ncurses.h>
-+
- #define DEPTH 10
- #define KILLMAX 2  /* Number of kills to accept to really die */
-                     /* this is to prevent looping with /unkill */
-diff -urN irc2.10.2p1.orig/irc/screen.c irc2.10.2p1/irc/screen.c
---- irc2.10.2p1.orig/irc/screen.c	Tue Jul 13 11:18:36 1999
-+++ irc2.10.2p1/irc/screen.c	Tue Jul 13 11:40:12 1999
-@@ -28,6 +28,8 @@
- #include "c_externs.h"
- #undef SCREEN_C
- 
-+#include <ncurses/ncurses.h>
-+
- #define	SBUFSIZ 240
- 
- #define	FROM_START 0
-diff -urN irc2.10.2p1.orig/support/configure irc2.10.2p1/support/configure
---- irc2.10.2p1.orig/support/configure	Tue Jul 13 11:18:36 1999
-+++ irc2.10.2p1/support/configure	Tue Jul 13 12:05:03 1999
-@@ -1479,7 +1479,7 @@
- 
- fi
- 
--for ac_hdr in stdio.h stdlib.h sys/types.h sys/bitypes.h stddef.h stdarg.h unistd.h ctype.h memory.h curses.h cursesX.h term.h sgtty.h errno.h sys/errno.h sys/syscall.h pwd.h math.h utmp.h fcntl.h signal.h sys/ioctl.h sys/file.h sys/filio.h sys/socket.h sys/stat.h sys/resource.h sys/select.h sys/poll.h stropts.h netdb.h netinet/in.h sys/un.h arpa/inet.h sys/param.h syslog.h sys/syslog.h string.h strings.h sys/time.h time.h sys/times.h netinet/in_systm.h netinfo/ni.h resolv.h arpa/nameser.h
-+for ac_hdr in stdio.h stdlib.h sys/types.h sys/bitypes.h stddef.h stdarg.h unistd.h ctype.h memory.h ncurses/curses.h cursesX.h term.h sgtty.h errno.h sys/errno.h sys/syscall.h pwd.h math.h utmp.h fcntl.h signal.h sys/ioctl.h sys/file.h sys/filio.h sys/socket.h sys/stat.h sys/resource.h sys/select.h sys/poll.h stropts.h netdb.h netinet/in.h sys/un.h arpa/inet.h sys/param.h syslog.h sys/syslog.h string.h strings.h sys/time.h time.h sys/times.h netinet/in_systm.h netinfo/ni.h resolv.h arpa/nameser.h
- do
- ac_safe=`echo "$ac_hdr" | sed 'y%./+-%__p_%'`
- echo $ac_n "checking for $ac_hdr""... $ac_c" 1>&6
-@@ -3970,7 +3970,7 @@
-   
-     if test -f /usr/include/netinet6/in6_ifattach.h; then
-       irc_cv_v6type=hydrangea
--    else if test -d /usr/inet6; then
-+    else if test -d /usr; then
-       irc_cv_v6type=linux
-     else
-       cat > conftest.$ac_ext <<EOF
-@@ -4071,7 +4071,6 @@
- 		LIBS="-L/usr/local/v6/lib -linet6 $LIBS"
- 		;;
- 	linux)
++if test "$enable_ip6" = "yes"; then
+   AC_DEFINE(INET6)
+   dnl be smart about it
+   AC_MSG_CHECKING([IPv6 system type])
+-  AC_CACHE_VAL(irc_cv_v6type, [
+-    if test -d /usr/inet6; then
+-      irc_cv_v6type=linux
+-    else
+-      AC_EGREP_CPP(yes, [dnl
++  for i in inria kame linux toshiba v6d zeta; do
++                case $i in
++                inria)
++                        dnl http://www.kame.net/
++                        AC_EGREP_CPP(yes, [dnl
+ #include <netinet/in.h>
+ #ifdef IPV6_INRIA_VERSION
+ yes
+-#endif], irc_cv_v6type=inria,
+-        AC_EGREP_CPP(yes, [dnl
++#endif],
++                                [ipv6type=$i])
++                        ;;
++                kame)
++                        dnl http://www.kame.net/
++                        AC_EGREP_CPP(yes, [dnl
+ #include <netinet/in.h>
+ #ifdef __KAME__
+ yes
+-#endif], irc_cv_v6type=kame,
+-          AC_EGREP_CPP(yes, [dnl
++#endif],
++                                [ipv6type=$i;
++                                ipv6lib=inet6;
++                                ipv6libdir=/usr/local/v6/lib;
++                                ipv6trylibc=yes])
++                        ;;
++                linux)
++                        dnl http://www.linux.org/
++                        AC_EGREP_CPP(yes, [dnl
++#include <linux/in.h>
++#ifdef _LINUX_IN_H
++yes
++#endif],
++                                [ipv6type=$i;
++                                ipv6lib=inet6;
++                                ipv6libdir=/usr/inet6/lib;
++                                ipv6trylibc=yes;
++                                CFLAGS="-I/usr/inet6/include $CFLAGS"])
++                        ;;
++                toshiba)
++                        AC_EGREP_CPP(yes, [dnl
+ #include <sys/param.h>
+ #ifdef _TOSHIBA_INET6
+ yes
+-#endif], irc_cv_v6type=toshiba,
+-            AC_EGREP_CPP(yes, [dnl
+-#include </usr/local/v6/include/sys/types.h>
++#endif],
++                                [ipv6type=$i;
++                                ipv6lib=inet6;
++                                ipv6libdir=/usr/local/v6/lib])
++                        ;;
++                v6d)
++                        AC_EGREP_CPP(yes, [dnl
++#include </usr/local/v6/include/sys/v6config.h>
+ #ifdef __V6D__
+ yes
+-#endif], irc_cv_v6type=v6d,
+-              AC_EGREP_CPP(yes, [dnl
++#endif],
++                                [ipv6type=$i;
++                                ipv6lib=v6;
++                                ipv6libdir=/usr/local/v6/lib;
++                                CFLAGS="-I/usr/local/v6/include $CFLAGS"])
++                        ;;
++                zeta)
++                        AC_EGREP_CPP(yes, [dnl
+ #include <sys/param.h>
+ #ifdef _ZETA_MINAMI_INET6
+ yes
+-#endif], irc_cv_v6type=zeta)))))
+-    fi])
+-  AC_MSG_RESULT($irc_cv_v6type)
+-
+-  dnl eventually update LIBS
+-  case $irc_cv_v6type in
+-	kame)
+-		LIBS="-L/usr/local/v6/lib -linet6 $LIBS"
+-		CFLAGS="$CFLAGS -I/usr/local/v6/include"
+-		;;
+-	linux)
 -		LIBS="-L/usr/inet6/lib -linet6 $LIBS"
- 		;;
- 	toshiba)
- 		LIBS="-L/usr/local/v6/lib -linet6 $LIBS"
-diff -urN irc2.10.2p1.orig/support/configure.in irc2.10.2p1/support/configure.in
---- irc2.10.2p1.orig/support/configure.in	Tue Jul 13 11:18:36 1999
-+++ irc2.10.2p1/support/configure.in	Tue Jul 13 12:04:50 1999
-@@ -735,7 +735,7 @@
-   AC_CACHE_VAL(irc_cv_v6type, [
-     if test -f /usr/include/netinet6/in6_ifattach.h; then
-       irc_cv_v6type=hydrangea
--    else if test -d /usr/inet6; then
-+    else if test -d /usr; then
-       irc_cv_v6type=linux
-     else
-       AC_EGREP_CPP(yes, [dnl
-@@ -776,7 +776,6 @@
- 		LIBS="-L/usr/local/v6/lib -linet6 $LIBS"
- 		;;
- 	linux)
--		LIBS="-L/usr/inet6/lib -linet6 $LIBS"
- 		;;
- 	toshiba)
- 		LIBS="-L/usr/local/v6/lib -linet6 $LIBS"
-@@ -1433,7 +1432,7 @@
+-		CFLAGS="$CFLAGS -I/usr/inet6/include"
+-		;;
+-	toshiba)
+-		LIBS="-L/usr/local/v6/lib -linet6 $LIBS"
+-		CFLAGS="$CFLAGS -I/usr/local/v6/include"
+-		;;
+-	v6d)
+-		LIBS="-L/usr/local/v6/lib -lv6 $LIBS"
+-		CFLAGS="$CFLAGS -I/usr/local/v6/include"
+-		;;
+-	zeta)
+-		LIBS="-L/usr/local/v6/lib -linet6 $LIBS"
+-		CFLAGS="$CFLAGS -I/usr/local/v6/include"
+-		;;
+-	esac
+-
++#endif],
++                                [ipv6type=$i;
++                                ipv6lib=inet6;
++                                ipv6libdir=/usr/local/v6/lib])
++                        ;;
++                esac
++                if test "$ipv6type" != "unknown"; then
++                        break
++                fi
++        done
++        AC_MSG_RESULT($ipv6type)
++fi
++
++if test "$enable_ip6" = "yes" -a "$ipv6lib" != "none"; then
++        if test -d $ipv6libdir -a -f $ipv6libdir/lib$ipv6lib.a; then
++                LIBS="-L$ipv6libdir -l$ipv6lib $LIBS"
++                echo "You have $ipv6lib library, using it"
++        else
++                if test "$ipv6trylibc" = "yes"; then
++                        echo "You do not have $ipv6lib library, using libc"
++                else
++                        echo 'Fatal: no $ipv6lib library found.  cannot continue.'
++                        echo "You need to fetch lib$ipv6lib.a from appropriate"
++                        echo 'ipv6 kit and compile beforehand.'
++                        exit 1
++                fi
++        fi
++fi
++	
++if test "$enable_ip6" = "yes"; then
+   dnl /etc/resolv.conf check
+   AC_MSG_CHECKING(for IPv6 name server addresses in resolv.conf ($irc_cv_path_resconf))
+   if grep nameserver $irc_cv_path_resconf | grep ':' >/dev/null 2>&1; then
+@@ -1459,7 +1500,7 @@
  
  AC_HEADER_STDC
  AC_HEADER_SYS_WAIT
--AC_CHECK_HEADERS(stdio.h stdlib.h sys/types.h sys/bitypes.h stddef.h stdarg.h unistd.h ctype.h memory.h curses.h cursesX.h term.h sgtty.h errno.h sys/errno.h sys/syscall.h pwd.h math.h utmp.h fcntl.h signal.h sys/ioctl.h sys/file.h sys/filio.h sys/socket.h sys/stat.h sys/resource.h sys/select.h sys/poll.h stropts.h netdb.h netinet/in.h sys/un.h arpa/inet.h sys/param.h syslog.h sys/syslog.h string.h strings.h sys/time.h time.h sys/times.h netinet/in_systm.h netinfo/ni.h resolv.h arpa/nameser.h)
-+AC_CHECK_HEADERS(stdio.h stdlib.h sys/types.h sys/bitypes.h stddef.h stdarg.h unistd.h ctype.h memory.h ncurses/curses.h cursesX.h term.h sgtty.h errno.h sys/errno.h sys/syscall.h pwd.h math.h utmp.h fcntl.h signal.h sys/ioctl.h sys/file.h sys/filio.h sys/socket.h sys/stat.h sys/resource.h sys/select.h sys/poll.h stropts.h netdb.h netinet/in.h sys/un.h arpa/inet.h sys/param.h syslog.h sys/syslog.h string.h strings.h sys/time.h time.h sys/times.h netinet/in_systm.h netinfo/ni.h resolv.h arpa/nameser.h)
+-AC_CHECK_HEADERS(stdio.h stdlib.h sys/types.h sys/bitypes.h stddef.h stdarg.h unistd.h ctype.h memory.h ncurses.h curses.h cursesX.h term.h sgtty.h errno.h sys/errno.h sys/syscall.h pwd.h math.h utmp.h fcntl.h signal.h sys/ioctl.h sys/file.h sys/filio.h sys/socket.h sys/stat.h sys/resource.h sys/select.h sys/poll.h stropts.h netdb.h netinet/in.h sys/un.h arpa/inet.h sys/param.h syslog.h sys/syslog.h string.h strings.h sys/time.h time.h sys/times.h netinet/in_systm.h netinfo/ni.h resolv.h arpa/nameser.h)
++AC_CHECK_HEADERS(asm/types.h stdio.h stdlib.h sys/types.h sys/bitypes.h stddef.h stdarg.h unistd.h ctype.h memory.h ncurses/ncurses.h ncurses/curses.h ncurses.h curses.h cursesX.h term.h sgtty.h errno.h sys/errno.h sys/syscall.h pwd.h math.h utmp.h fcntl.h signal.h sys/ioctl.h sys/file.h sys/filio.h sys/socket.h sys/stat.h sys/resource.h sys/select.h sys/poll.h stropts.h netdb.h netinet/in.h sys/un.h arpa/inet.h sys/param.h syslog.h sys/syslog.h string.h strings.h sys/time.h time.h sys/times.h netinet/in_systm.h netinfo/ni.h resolv.h arpa/nameser.h)
  IRC_DECL_SYS_ERRLIST
  IRC_DECL_SYS_NERR
  IRC_DECL_ERRNO
