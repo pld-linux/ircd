@@ -1,6 +1,6 @@
 Name:		ircd
 Version:	2.10.3
-Release:	2
+Release:	3
 Copyright:	GPL
 Summary:	Internet Relay Chat Server
 Summary(pl):	Serwer IRC (Internet Relay Chat)
