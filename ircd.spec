@@ -9,6 +9,7 @@ Source0:	ftp://ftp.irc.org/irc/server/irc%{version}.tgz
 Source1:	%{name}.init
 Source2:	irc2.10.3p1-config.h
 URL:		http://www.irc.org/
+BuildRequires:	zlib-devel
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 PreReq:		/sbin/chkconfig
 
