@@ -13,19 +13,23 @@
 . /etc/sysconfig/network
 
 # Check that networking is up.
-[ "${NETWORKING}" == "no" ] && exit 0
+if is_no "${NETWORKING}"; then
+	msg_Network_Down IRCd
+	exit 1
+fi
+
 
 # See how we were called.
 case "$1" in
   start)
 	# Start daemons.
-	show "Starting ircd"
+	msg_starting ircd
 	daemon ircd
 	touch /var/lock/subsys/ircd
 	;;
   stop)
 	# Stop daemons.
-	show "Shutting down ircd"
+	msg_stopping ircd
 	killproc ircd
 	rm -f /var/lock/subsys/ircd
 	;;
@@ -37,7 +41,7 @@ case "$1" in
   	status ircd
 	;;
   *)
-	echo "Usage: $0 {start|stop|restart|status}"
+	msg_Usage "$0 {start|stop|restart|status}"
 	exit 1
 esac
 
