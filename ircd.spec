@@ -11,6 +11,7 @@ Release:	3
 License:	GPL
 Group:		Daemons
 Source0:	ftp://ftp.irc.org/irc/server/irc%{version}.tgz
+# Source0-md5:	bec7916f39043609c528afac507a2e00
 Source1:	%{name}.init
 Source2:	%{name}.sysconfig
 Source3:	%{name}.logrotate
