@@ -1,6 +1,7 @@
---- irc2.10.3/support/configure.in	Wed Aug 23 22:22:37 2000
-+++ irc2.10.3-p/support/configure.in	Wed Aug 23 22:26:57 2000
-@@ -1530,8 +1530,9 @@
+diff -urN irc2.10.3p3.org/support/configure.in irc2.10.3p3/support/configure.in
+--- irc2.10.3p3.org/support/configure.in	Sat Feb 10 02:32:10 2001
++++ irc2.10.3p3/support/configure.in	Sun Oct 21 07:53:54 2001
+@@ -1486,8 +1486,10 @@
  AC_C_CONST
  
  AC_CHECK_LIB(crypt, crypt)
@@ -9,6 +10,7 @@
 +AC_CHECK_FUNC(socket, ,[
 +	AC_CHECK_LIB(socket, socket)
 +	AC_CHECK_LIB(nsl, socket)])
++
+ IRC_MATHLIB
  
  IRC_PATH_ZLIB
- IRC_CURSES_TERMCAP
