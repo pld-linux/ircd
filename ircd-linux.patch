@@ -1,0 +1,129 @@
+diff -urN irc2.10.2p1.orig/common/os.h irc2.10.2p1/common/os.h
+--- irc2.10.2p1.orig/common/os.h	Tue Jul 13 11:18:35 1999
++++ irc2.10.2p1/common/os.h	Tue Jul 13 11:22:46 1999
+@@ -37,6 +37,7 @@
+ 
+ #if HAVE_SYS_TYPES_H
+ # include <sys/types.h>
++# include <asm/types.h>
+ #endif
+ 
+ #if HAVE_SYS_BITYPES_H
+diff -urN irc2.10.2p1.orig/irc/c_bsd.c irc2.10.2p1/irc/c_bsd.c
+--- irc2.10.2p1.orig/irc/c_bsd.c	Tue Jul 13 11:18:36 1999
++++ irc2.10.2p1/irc/c_bsd.c	Tue Jul 13 11:38:00 1999
+@@ -28,6 +28,8 @@
+ #include "c_externs.h"
+ #undef C_BSD_C
+ 
++#include <ncurses/ncurses.h>
++
+ #ifdef AUTOMATON
+ #ifdef DOCURSES
+ #undef DOCURSES
+diff -urN irc2.10.2p1.orig/irc/c_msg.c irc2.10.2p1/irc/c_msg.c
+--- irc2.10.2p1.orig/irc/c_msg.c	Tue Jul 13 11:18:36 1999
++++ irc2.10.2p1/irc/c_msg.c	Tue Jul 13 11:41:10 1999
+@@ -28,6 +28,8 @@
+ #include "c_externs.h"
+ #undef C_MSG_C
+ 
++#include <ncurses/ncurses.h>
++
+ char	mybuf[513];
+ 
+ void m_die() {
+diff -urN irc2.10.2p1.orig/irc/edit.c irc2.10.2p1/irc/edit.c
+--- irc2.10.2p1.orig/irc/edit.c	Tue Jul 13 11:18:36 1999
++++ irc2.10.2p1/irc/edit.c	Tue Jul 13 11:39:13 1999
+@@ -28,6 +28,8 @@
+ #include "c_externs.h"
+ #undef EDIT_C
+ 
++#include <ncurses/ncurses.h>
++
+ #define FROM_START 0
+ #define FROM_END   1
+ #define RELATIVE   2
+diff -urN irc2.10.2p1.orig/irc/irc.c irc2.10.2p1/irc/irc.c
+--- irc2.10.2p1.orig/irc/irc.c	Tue Jul 13 11:18:36 1999
++++ irc2.10.2p1/irc/irc.c	Tue Jul 13 11:39:41 1999
+@@ -28,6 +28,8 @@
+ #include "c_externs.h"
+ #undef IRC_C
+ 
++#include <ncurses/ncurses.h>
++
+ #define DEPTH 10
+ #define KILLMAX 2  /* Number of kills to accept to really die */
+                     /* this is to prevent looping with /unkill */
+diff -urN irc2.10.2p1.orig/irc/screen.c irc2.10.2p1/irc/screen.c
+--- irc2.10.2p1.orig/irc/screen.c	Tue Jul 13 11:18:36 1999
++++ irc2.10.2p1/irc/screen.c	Tue Jul 13 11:40:12 1999
+@@ -28,6 +28,8 @@
+ #include "c_externs.h"
+ #undef SCREEN_C
+ 
++#include <ncurses/ncurses.h>
++
+ #define	SBUFSIZ 240
+ 
+ #define	FROM_START 0
+diff -urN irc2.10.2p1.orig/support/configure irc2.10.2p1/support/configure
+--- irc2.10.2p1.orig/support/configure	Tue Jul 13 11:18:36 1999
++++ irc2.10.2p1/support/configure	Tue Jul 13 12:05:03 1999
+@@ -1479,7 +1479,7 @@
+ 
+ fi
+ 
+-for ac_hdr in stdio.h stdlib.h sys/types.h sys/bitypes.h stddef.h stdarg.h unistd.h ctype.h memory.h curses.h cursesX.h term.h sgtty.h errno.h sys/errno.h sys/syscall.h pwd.h math.h utmp.h fcntl.h signal.h sys/ioctl.h sys/file.h sys/filio.h sys/socket.h sys/stat.h sys/resource.h sys/select.h sys/poll.h stropts.h netdb.h netinet/in.h sys/un.h arpa/inet.h sys/param.h syslog.h sys/syslog.h string.h strings.h sys/time.h time.h sys/times.h netinet/in_systm.h netinfo/ni.h resolv.h arpa/nameser.h
++for ac_hdr in stdio.h stdlib.h sys/types.h sys/bitypes.h stddef.h stdarg.h unistd.h ctype.h memory.h ncurses/curses.h cursesX.h term.h sgtty.h errno.h sys/errno.h sys/syscall.h pwd.h math.h utmp.h fcntl.h signal.h sys/ioctl.h sys/file.h sys/filio.h sys/socket.h sys/stat.h sys/resource.h sys/select.h sys/poll.h stropts.h netdb.h netinet/in.h sys/un.h arpa/inet.h sys/param.h syslog.h sys/syslog.h string.h strings.h sys/time.h time.h sys/times.h netinet/in_systm.h netinfo/ni.h resolv.h arpa/nameser.h
+ do
+ ac_safe=`echo "$ac_hdr" | sed 'y%./+-%__p_%'`
+ echo $ac_n "checking for $ac_hdr""... $ac_c" 1>&6
+@@ -3970,7 +3970,7 @@
+   
+     if test -f /usr/include/netinet6/in6_ifattach.h; then
+       irc_cv_v6type=hydrangea
+-    else if test -d /usr/inet6; then
++    else if test -d /usr; then
+       irc_cv_v6type=linux
+     else
+       cat > conftest.$ac_ext <<EOF
+@@ -4071,7 +4071,6 @@
+ 		LIBS="-L/usr/local/v6/lib -linet6 $LIBS"
+ 		;;
+ 	linux)
+-		LIBS="-L/usr/inet6/lib -linet6 $LIBS"
+ 		;;
+ 	toshiba)
+ 		LIBS="-L/usr/local/v6/lib -linet6 $LIBS"
+diff -urN irc2.10.2p1.orig/support/configure.in irc2.10.2p1/support/configure.in
+--- irc2.10.2p1.orig/support/configure.in	Tue Jul 13 11:18:36 1999
++++ irc2.10.2p1/support/configure.in	Tue Jul 13 12:04:50 1999
+@@ -735,7 +735,7 @@
+   AC_CACHE_VAL(irc_cv_v6type, [
+     if test -f /usr/include/netinet6/in6_ifattach.h; then
+       irc_cv_v6type=hydrangea
+-    else if test -d /usr/inet6; then
++    else if test -d /usr; then
+       irc_cv_v6type=linux
+     else
+       AC_EGREP_CPP(yes, [dnl
+@@ -776,7 +776,6 @@
+ 		LIBS="-L/usr/local/v6/lib -linet6 $LIBS"
+ 		;;
+ 	linux)
+-		LIBS="-L/usr/inet6/lib -linet6 $LIBS"
+ 		;;
+ 	toshiba)
+ 		LIBS="-L/usr/local/v6/lib -linet6 $LIBS"
+@@ -1433,7 +1432,7 @@
+ 
+ AC_HEADER_STDC
+ AC_HEADER_SYS_WAIT
+-AC_CHECK_HEADERS(stdio.h stdlib.h sys/types.h sys/bitypes.h stddef.h stdarg.h unistd.h ctype.h memory.h curses.h cursesX.h term.h sgtty.h errno.h sys/errno.h sys/syscall.h pwd.h math.h utmp.h fcntl.h signal.h sys/ioctl.h sys/file.h sys/filio.h sys/socket.h sys/stat.h sys/resource.h sys/select.h sys/poll.h stropts.h netdb.h netinet/in.h sys/un.h arpa/inet.h sys/param.h syslog.h sys/syslog.h string.h strings.h sys/time.h time.h sys/times.h netinet/in_systm.h netinfo/ni.h resolv.h arpa/nameser.h)
++AC_CHECK_HEADERS(stdio.h stdlib.h sys/types.h sys/bitypes.h stddef.h stdarg.h unistd.h ctype.h memory.h ncurses/curses.h cursesX.h term.h sgtty.h errno.h sys/errno.h sys/syscall.h pwd.h math.h utmp.h fcntl.h signal.h sys/ioctl.h sys/file.h sys/filio.h sys/socket.h sys/stat.h sys/resource.h sys/select.h sys/poll.h stropts.h netdb.h netinet/in.h sys/un.h arpa/inet.h sys/param.h syslog.h sys/syslog.h string.h strings.h sys/time.h time.h sys/times.h netinet/in_systm.h netinfo/ni.h resolv.h arpa/nameser.h)
+ IRC_DECL_SYS_ERRLIST
+ IRC_DECL_SYS_NERR
+ IRC_DECL_ERRNO
