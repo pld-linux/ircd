@@ -15,8 +15,8 @@ diff -urN irc2.10.3.orig/support/config.h.dist irc2.10.3/support/config.h.dist
   *				1 dns port, 1 client
   */
 -#define MAXCONNECTIONS	50
-+#define MAXCONNECTIONS	100
- 
++#define MAXCONNECTIONS	512
+
  /* MAXIMUM LINKS
   *
 @@ -175,7 +175,7 @@
