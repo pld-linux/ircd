@@ -7,7 +7,7 @@ Summary:	Internet Relay Chat Server
 Summary(pl):	Serwer IRC (Internet Relay Chat)
 Name:		ircd
 Version:	2.11.0
-Release:	0.%{_rc}.1
+Release:	0.%{_rc}.2
 License:	GPL
 Group:		Daemons
 Source0:	ftp://ftp.irc.org/irc/server/BETA/irc%{version}%{_rc}.tgz
@@ -49,11 +49,11 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
 Ircd is the server (daemon) program for the Internet Relay Chat
-Program. It has built-in IPv6 support.
+Program. There is also version with IPv6 support enclosed.
 
 %description -l pl
-Ircd jest serwerem us³ugi IRC (Internet Relay Chat Program). Zawiera
-wsparcie dla IPv6.
+Ircd jest serwerem us³ugi IRC (Internet Relay Chat Program). Za³±czona
+jest tak¿e wersja obs³uguj±ca IPv6.
 
 %prep
 %setup -q -n irc%{version}%{_rc}
@@ -66,6 +66,11 @@ wsparcie dla IPv6.
 %build
 cp -f /usr/share/automake/config.* support
 
+mdir=$(pwd)
+mkdir .ircd6
+cp -a * .ircd6
+
+cd .ircd6
 # cannot regenerate, so use workaround
 export ac_cv_lib_nsl_socket=no
 %configure2_13 \
@@ -73,6 +78,18 @@ export ac_cv_lib_nsl_socket=no
 	--enable-dsm \
 	--with-zlib \
 	--enable-ip6
+
+cd "`support/config.guess`"
+%{__make} all
+
+cd $mdir
+
+# cannot regenerate, so use workaround
+export ac_cv_lib_nsl_socket=no
+%configure2_13 \
+	--with-logdir=%{_var}/log/%{name} \
+	--enable-dsm \
+	--with-zlib
 
 cd "`support/config.guess`"
 %{__make} all
@@ -93,6 +110,9 @@ cd $tdir
 	server_man_dir=$RPM_BUILD_ROOT%{_mandir}/man8
 
 cd ..
+for f in chkconf iauth ircd ircd-mkpasswd ircdwatch; do
+	install .ircd6/${tdir}/${f} $RPM_BUILD_ROOT%{_sbindir}/${f}6
+done
 
 install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/%{name}
 install %{SOURCE2} $RPM_BUILD_ROOT/etc/sysconfig/%{name}
