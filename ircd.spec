@@ -93,45 +93,18 @@ touch $RPM_BUILD_ROOT%{_localstatedir}/ircd.{pid,tune}
 rm -rf $RPM_BUILD_ROOT
 
 %pre
-if [ -n "`getgid ircd`" ]; then
-	if [ "`getgid ircd`" != "75" ]; then
-		echo "Warning: group ircd haven't gid=75. Correct this before installing ircd" 1>&2
-		exit 1
-	fi
-else
-	%{_sbindir}/groupadd -f -g 75 ircd 2> /dev/null
-fi
-if [ -n "`id -u ircd 2>/dev/null`" ]; then
-	if [ "`id -u ircd`" != "75" ]; then
-		echo "Warning: user ircd haven't uid=75. Correct this before installing ircd" 1>&2
-		exit 1
-	fi
-else
-	%{_sbindir}/useradd -g ircd -d /etc/%{name} -u 75 -s /bin/true ircd 2> /dev/null
-fi
+GID=75; %groupadd
+UID=75; HOMEDIR=/etc/ircd; %useradd
+
 %post
-/sbin/chkconfig --add ircd
-if [ -f /var/lock/subsys/httpd ]; then
-	/etc/rc.d/init.d/ircd restart 1>&2
-else
-	echo "Run \"/etc/rc.d/init.d/ircd start\" to start IRC daemon."
-fi
+DESC="IRC daemon"; %chkconfig_add
 
 %preun
-# If package is being erased for the last time.
-if [ $1 = 0 ]; then
-	if [ -f /var/lock/subsys/ircd ]; then
-		/etc/rc.d/init.d/ircd stop 1>&2
-	fi
-	/sbin/chkconfig --del ircd
-fi
+%chkconfig_del
 
 %postun
-# If package is being erased for the last time.
-if [ $1 = 0 ]; then
-	%{_sbindir}/userdel ircd 2> /dev/null
-	%{_sbindir}/groupdel ircd 2> /dev/null
-fi
+%userdel
+%groupdel
 
 %files
 %defattr(644,root,root,755)
