@@ -1,6 +1,6 @@
-diff -ur irc2.10.3p6/support/config.h.dist irc2.10.3p6-conf/support/config.h.dist
---- irc2.10.3p6/support/config.h.dist	2004-04-29 18:33:11.797559848 +0200
-+++ irc2.10.3p6-conf/support/config.h.dist	2004-04-29 18:34:05.033466760 +0200
+diff -ur irc2.10.3p7.orig/support/config.h.dist irc2.10.3p7/support/config.h.dist
+--- irc2.10.3p7.orig/support/config.h.dist	2004-10-11 22:18:59.000000000 +0200
++++ irc2.10.3p7/support/config.h.dist	2004-10-11 22:26:58.239240656 +0200
 @@ -35,7 +35,7 @@
   * may want to log when ircdwatch reloads the config or when
   * ircd croaks and ircdwatch has to restart it
@@ -37,6 +37,15 @@ diff -ur irc2.10.3p6/support/config.h.dist irc2.10.3p6-conf/support/config.h.dis
  
  #ifdef HUB
  /*
+@@ -238,7 +238,7 @@
+  * define this if you want to use crypted passwords for operators in your
+  * ircd.conf file. See contrib/mkpasswd/README for more details on this.
+  */
+-#define	CRYPT_OPER_PASSWORD
++#undef	CRYPT_OPER_PASSWORD
+ 
+ /*
+  * If you want to store encrypted passwords in N-lines for server links,
 @@ -275,8 +275,8 @@
   * define IRC_UID to that UID.  This should only be defined if you are running
   * as root and even then perhaps not.
