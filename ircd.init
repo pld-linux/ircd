@@ -25,6 +25,11 @@ else
 	exit 0
 fi
 
+if is_yes "$IPV6_NETWORKING" && [ -x /usr/sbin/ircd6 ]; then
+    IRCD="/usr/sbin/ircd6"
+else
+    IRCD="/usr/sbin/ircd"
+
 RETVAL=0
 # See how we were called.
 case "$1" in
@@ -33,7 +38,7 @@ case "$1" in
 	if [ ! -f /var/lock/subsys/ircd ]; then
 		# Start daemons.
 		msg_starting "IRCd Server"
-		daemon ircd -c
+		daemon ${IRCD} -c
 		touch /var/lock/subsys/ircd
 	else
 		msg_already_running IRCd
@@ -44,7 +49,7 @@ case "$1" in
 	if [ -f /var/lock/subsys/ircd ]; then
 		# Stop daemons.
 		msg_stopping "IRCd Server"
-		killproc ircd
+		killproc ${IRCD#\-}
 		rm -f /var/run/ircd.pid
 		rm -f /var/lock/subsys/ircd
 	else
@@ -54,7 +59,7 @@ case "$1" in
   reload|force-reload)
 	if [ -f /var/lock/subsys/ircd ]; then
 		msg_reloading "IRCd Server"
-		killproc ircd -HUP
+		killproc ${IRCD#\-} -HUP
 		RETVAL=$?
 	else
 		msg_not_running IRCd >&2
@@ -67,7 +72,7 @@ case "$1" in
 	exit $?
 	;;
   status)
-	status ircd
+	status ${IRCD#\-}
 	exit $?
 	;;
   *)
