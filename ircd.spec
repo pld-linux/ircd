@@ -1,4 +1,5 @@
 Summary:	The most widely used IRC server (on IRCnet for instance)
+Summary(pl):	Serwer IRC (Internet Relay Chat)
 Name:		ircd
 Version:	2.10.3p3
 Release:	1
@@ -24,6 +25,10 @@ client program irc(1) with messages and commands. All commands and
 user messages are are passed directly to the ircd for processing and
 relaying to other ircd sites.
 
+%description -l pl
+Ircd jest serwerem us³ugi IRC (Internet Relay Chat Program). Ta wersja
+wspiera tak¿e protokó³ IPv6.
+
 %prep
 %setup -q -n irc%version
 
@@ -33,7 +38,7 @@ export CFLAGS="%{rpmcflags}"
 	--prefix=%{_prefix} \
 	--libdir=%{_chroot} \
 	--localstatedir=/run \
---sysconfdir=%{_sysconfdir}/ircd \
+	--sysconfdir=%{_sysconfdir}/ircd \
 	--logdir=/log \
 	--mandir=%{_mandir} \
 	--with-zlib \
@@ -41,47 +46,53 @@ export CFLAGS="%{rpmcflags}"
 	--enable-dsm
 MYARCH=`support/config.guess`
 install -m 644 %{SOURCE2} $MYARCH/config.h
-# make everything except the client
+
 %{__make} -C $MYARCH ircd iauth chkconf ircd-mkpasswd
 %{__make} -C $MYARCH ircdwatch ircd_var_dir=%{_chroot}/run
 
 %install
 rm -rf $RPM_BUILD_ROOT
-rm -rf %{buildroot}
-%{__make} -C `support/config.guess` prefix=%{buildroot}%{_prefix} \
-	server_man_dir=%{buildroot}%{_mandir}/man8 \
-	conf_man_dir=%{buildroot}%{_mandir}/man5 \
-	ircd_dir=%{buildroot}%{_chroot} \
-ircd_conf_dir=%{buildroot}%{_chroot}%{_sysconfdir}/ircd \
-	ircd_var_dir=%{buildroot}%{_chroot}/run \
-	ircd_log_dir=%{buildroot}%{_chroot}/log \
+%{__make} -C `support/config.guess` prefix=$RPM_BUILD_ROOT%{_prefix} \
+	server_man_dir=$RPM_BUILD_ROOT%{_mandir}/man8 \
+	conf_man_dir=$RPM_BUILD_ROOT%{_mandir}/man5 \
+	ircd_dir=$RPM_BUILD_ROOT%{_chroot} \
+	ircd_conf_dir=$RPM_BUILD_ROOT%{_chroot}%{_sysconfdir}/ircd \
+	ircd_var_dir=$RPM_BUILD_ROOT%{_chroot}/run \
+	ircd_log_dir=$RPM_BUILD_ROOT%{_chroot}/log \
 	install-server
 
-install -d %{buildroot}%{_chroot}/{etc,lib,usr/sbin,log,run}
-# install -D -m 711 %{SOURCE3} %{buildroot}%{_sbindir}/ircd-crypter
-install -D -m 755 $RPM_SOURCE_DIR/ircd.init %{buildroot}/etc/rc.d/init.d/ircd
+install -d $RPM_BUILD_ROOT%{_chroot}/{etc,lib,usr/sbin,log,run}
+install -D -m 755 $RPM_SOURCE_DIR/ircd.init $RPM_BUILD_ROOT/etc/rc.d/init.d/ircd
 
-echo 'This is a poorly installed IRC server (MOTD not edited)' \
-> %{buildroot}%{_chroot}%{_sysconfdir}/ircd/ircd.motd
-touch %{buildroot}%{_chroot}%{_sysconfdir}/resolv.conf
-mv %{buildroot}%{_chroot}%{_sysconfdir}/ircd/example.conf \
-%{buildroot}%{_chroot}%{_sysconfdir}/ircd/ircd.conf.dist
-cp %{buildroot}%{_chroot}%{_sysconfdir}/ircd/ircd.conf.dist \
-%{buildroot}%{_chroot}%{_sysconfdir}/ircd/ircd.conf
+cat << EOF > $RPM_BUILD_ROOT%{_chroot}%{_sysconfdir}/ircd/ircd.motd
+
+Powered by PLD Linux Distibution IRC Server with IPv6 support!
+
+WWW:        http://www.pld.org.pl/
+FTP:        ftp://ftp.pld.org.pl/
+e-mail:      feedback@pld.org.pl
+
+EOF
+
+touch $RPM_BUILD_ROOT%{_chroot}%{_sysconfdir}/resolv.conf
+mv $RPM_BUILD_ROOT%{_chroot}%{_sysconfdir}/ircd/example.conf \
+$RPM_BUILD_ROOT%{_chroot}%{_sysconfdir}/ircd/ircd.conf.dist
+cp $RPM_BUILD_ROOT%{_chroot}%{_sysconfdir}/ircd/ircd.conf.dist \
+$RPM_BUILD_ROOT%{_chroot}%{_sysconfdir}/ircd/ircd.conf
 
 # Chroot-related
-mv %{buildroot}%{_sbindir}/iauth %{buildroot}%{_chroot}%{_sbindir}
-ln -sf ../..%{_chroot}%{_sbindir}/iauth %{buildroot}%{_sbindir}
+mv $RPM_BUILD_ROOT%{_sbindir}/iauth $RPM_BUILD_ROOT%{_chroot}%{_sbindir}
+ln -sf ../..%{_chroot}%{_sbindir}/iauth $RPM_BUILD_ROOT%{_sbindir}
 
-ln -sf ..%{_chroot}%{_sysconfdir}/ircd %{buildroot}%{_sysconfdir}/ircd
+ln -sf ..%{_chroot}%{_sysconfdir}/ircd $RPM_BUILD_ROOT%{_sysconfdir}/ircd
 
 # Borrowed from anonftp
-cat > %{buildroot}%{_chroot}%{_sysconfdir}/passwd << EOF
+cat > $RPM_BUILD_ROOT%{_chroot}%{_sysconfdir}/passwd << EOF
 root:*:0:0:::
 bin:*:1:1:::
 EOF
 
-cat > %{buildroot}%{_chroot}%{_sysconfdir}/group << EOF
+cat > $RPM_BUILD_ROOT%{_chroot}%{_sysconfdir}/group << EOF
 root::0:
 bin::1:
 daemon::2:
@@ -97,9 +108,9 @@ EOF
 %define LIBCSOVER 6
 %define LIBDLVER 2
 
-%define _chlib %{buildroot}%{_chroot}/lib
+%define _chlib $RPM_BUILD_ROOT%{_chroot}/lib
 
-cp -fd %{_sysconfdir}/ld.so.cache %{buildroot}%{_chroot}%{_sysconfdir}
+cp -fd %{_sysconfdir}/ld.so.cache $RPM_BUILD_ROOT%{_chroot}%{_sysconfdir}
 cp -fd /lib/libc.so.%{LIBCSOVER} /lib/libc-%{LIBCVER}.so	%{_chlib}
 cp -fd /lib/ld-linux.so.%{LDSOVER} /lib/ld-%{LIBCVER}.so	%{_chlib}
 cp -fd /lib/libcrypt-%{LIBCVER}.so \
@@ -138,7 +149,7 @@ if [ $1 = 0 ] ; then
 fi
 
 %clean
-rm -rf %{buildroot}
+rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
