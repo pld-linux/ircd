@@ -77,11 +77,11 @@ rm -f $RPM_BUILD_ROOT%{_sysconfdir}/example.conf
 
 cat << EOF > $RPM_BUILD_ROOT%{_sysconfdir}/ircd.motd
 
-Powered by Polish Linux Distibution IRC Server with IPv6 support!
+Powered by PLD Linux Distibution IRC Server with IPv6 support!
 
-WwW:        http://www.pld.org.pl/	http://www.ipv6.pld.org.pl/
+WWW:        http://www.pld.org.pl/
 FTP:        ftp://ftp.pld.org.pl/
-EMail:       feedback@pld.org.pl
+e-mail:      feedback@pld.org.pl
 
 EOF
 
