@@ -1,17 +1,18 @@
 Name:		ircd
 Version:	2.10.3
-Release:	3
-Copyright:	GPL
+Release:	4
+License:	GPL
 Summary:	Internet Relay Chat Server
 Summary(pl):	Serwer IRC (Internet Relay Chat)
 Group:		Daemons
 Group(pl):	Serwery
 URL:		http://www.xs4all.nl/~carlo17/ircd-dev/
 Source0:	ftp://ftp.funet.fi/pub/unix/irc/server/irc%{version}.tgz
-Source1:	ircd.init
+Source1:	%{name}.init
 Patch0:		%{name}-config.patch
 Patch1:		%{name}-linux.patch
-BuildPrereq:    zlib-devel
+Patch2:		%{name}-no_libnsl.patch
+BuildPrereq:	zlib-devel
 BuildPrereq:	ncurses-devel
 BuildPrereq:	textutils
 Requires:	rc-scripts
@@ -20,56 +21,52 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 Obsoletes:	ircd6
 
 %description
-Ircd is the server (daemon) program for the Internet Relay
-Chat Program. This version supports IPv6, too.
+Ircd is the server (daemon) program for the Internet Relay Chat
+Program. This version supports IPv6, too.
 
 %description -l pl
-Ircd jest serwerem us³ugi IRC (Internet Relay Chat Program).
-Ta wersja wspiera tak¿e protokó³ IPv6.
+Ircd jest serwerem us³ugi IRC (Internet Relay Chat Program). Ta wersja
+wspiera tak¿e protokó³ IPv6.
 
 %prep
 %setup -q -n irc%{version}
 %patch0 -p1
 %patch1 -p1
+%patch2 -p1
 
 %build
+LDFLAGS="-s"
 cd support && autoheader && autoconf && cd ..
-CFLAGS="$RPM_OPT_FLAGS" LDFLAGS="-s" \
-./configure \
-	--prefix=%{_prefix} \
-	--sbindir=%{_sbindir} \
+%configure \
 	--logdir=%{_var}/log/%{name} \
-	--sysconfdir=/etc/%{name} \
-	--localstatedir=%{_var}/run \
-	--with-zlib \
 	--enable-ip6 \
-	--enable-dsm \
-        %{_target_platform}
+	--enable-dsm
 
-cd `support/config.guess`
+cd "`support/config.guess`"
 %{__make} all
 
 %install
 rm -rf $RPM_BUILD_ROOT
 
-cd `support/config.guess`
-install -d		$RPM_BUILD_ROOT%{_var}/log/ircd
-install -d		$RPM_BUILD_ROOT%{_libdir}/ircd
-install -d		$RPM_BUILD_ROOT%{_sbindir}
-install -d		$RPM_BUILD_ROOT%{_mandir}/man{1,3,5,8}
-install -d		$RPM_BUILD_ROOT/etc/{ircd,rc.d/init.d}
+cd "`support/config.guess`"
+install -d $RPM_BUILD_ROOT%{_var}/log/ircd
+install -d $RPM_BUILD_ROOT%{_libdir}/ircd
+install -d $RPM_BUILD_ROOT%{_sbindir}
+install -d $RPM_BUILD_ROOT%{_mandir}/man{1,3,5,8}
+install -d $RPM_BUILD_ROOT{%{_sysconfdir}/ircd,/etc/rc.d/init.d}
 
 %{__make} install DESTDIR=$RPM_BUILD_ROOT \
 	     client_man_dir=$RPM_BUILD_ROOT%{_mandir}/man1 \
 	     conf_man_dir=$RPM_BUILD_ROOT%{_mandir}/man5 \
 	     server_man_dir=$RPM_BUILD_ROOT%{_mandir}/man8
 
-install %{SOURCE1}	$RPM_BUILD_ROOT/etc/rc.d/init.d/%{name}
-tr ':' '%' <		$RPM_BUILD_ROOT/etc/%{name}/example.conf > \
-	   		$RPM_BUILD_ROOT/etc/%{name}/ircd.conf
-rm -f			$RPM_BUILD_ROOT/etc/%{name}/example.conf
+install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/%{name}
 
-cat << EOF > $RPM_BUILD_ROOT/etc/%{name}/ircd.motd
+tr ':' '%' < $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/example.conf > \
+	$RPM_BUILD_ROOT%{_sysconfdir}/%{name}/ircd.conf
+rm -f $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/example.conf
+
+cat << EOF > $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/ircd.motd
 
 Powered by Polish Linux Distibution IRC Server with IPv6 support!
 
@@ -79,12 +76,11 @@ EMail:       pld-list@pld.org.pl
 
 EOF
 
-mv		$RPM_BUILD_ROOT%{_bindir}/irc		$RPM_BUILD_ROOT%{_bindir}/ircs
-mv		$RPM_BUILD_ROOT%{_mandir}/man1/irc.1	$RPM_BUILD_ROOT%{_mandir}/man1/ircs.1
-gzip -9nf	$RPM_BUILD_ROOT%{_mandir}/man*/* ../doc/*   || :
-strip		$RPM_BUILD_ROOT{%{_bindir}/*,%{_sbindir}/*} || :
+mv -f $RPM_BUILD_ROOT%{_bindir}/irc $RPM_BUILD_ROOT%{_bindir}/ircs
+mv -f $RPM_BUILD_ROOT%{_mandir}/man1/irc.1 $RPM_BUILD_ROOT%{_mandir}/man1/ircs.1
+gzip -9nf $RPM_BUILD_ROOT%{_mandir}/man*/* ../doc/*
 
-touch		$RPM_BUILD_ROOT%{_var}/run/ircd.pid
+touch $RPM_BUILD_ROOT%{_var}/run/ircd.pid
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -110,16 +106,16 @@ if [ $1 = 0 ]; then
 fi
 
 %files
-%defattr(644,root,root)
+%defattr(644,root,root,755)
 %doc doc/{2.10-New,2.9-New,Authors,ChangeLog,Etiquette,INSTALL.txt,SERVICE.txt,m4macros}.gz
 %attr(755,root,root) %{_bindir}/*
 %attr(755,root,root) %{_sbindir}/*
-%attr(750,root,ircd) %dir /etc/%{name}
-%attr(644,root,ircd) /etc/%{name}/ircd.motd
+%attr(750,root,ircd) %dir %{_sysconfdir}/%{name}
+%attr(644,root,ircd) %{_sysconfdir}/%{name}/ircd.motd
 %attr(750,ircd,ircd) %dir %{_var}/log/ircd
 %attr(644,ircd,ircd) %dir %{_var}/run/ircd.pid
 %attr(644,root,root) %{_mandir}/man[158]/*
 %attr(754,root,root) /etc/rc.d/init.d/%{name}
-%attr(644,root,root) /etc/%{name}/ircd.m4
-%attr(640,root,ircd) %config(noreplace) /etc/%{name}/ircd.conf
-%attr(640,root,ircd) %config(noreplace) /etc/%{name}/iauth.conf
+%attr(644,root,root) %{_sysconfdir}/%{name}/ircd.m4
+%attr(640,root,ircd) %config(noreplace) %{_sysconfdir}/%{name}/ircd.conf
+%attr(640,root,ircd) %config(noreplace) %{_sysconfdir}/%{name}/iauth.conf
