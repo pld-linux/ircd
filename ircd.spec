@@ -7,13 +7,13 @@ License:	GPL
 Group:		Daemons
 Group(de):	Server
 Group(pl):	Serwery
-URL:		http://www.xs4all.nl/~carlo17/ircd-dev/
-Source0:	ftp://ftp.funet.fi/pub/unix/irc/server/irc%{version}.tgz
+Source0:	ftp://ftp.irc.org/irc/server/irc%{version}.tgz
 Source1:	%{name}.init
 Source2:	%{name}.sysconfig
 Patch0:		%{name}-config.patch
 Patch1:		%{name}-linux.patch
 Patch2:		%{name}-no_libnsl.patch
+URL:		http://www.irc.org/
 BuildPrereq:	zlib-devel
 BuildPrereq:	ncurses-devel
 BuildPrereq:	textutils
@@ -40,7 +40,11 @@ wspiera tak¿e protokó³ IPv6.
 %patch2 -p1
 
 %build
-cd support && autoheader && autoconf && cd ..
+cd support 
+	autoheader
+	autoconf
+cd ..
+
 %configure \
 	--logdir=%{_var}/log/%{name} \
 	--enable-ip6 \
