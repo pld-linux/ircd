@@ -1,7 +1,7 @@
 #
 # Conditional build:
 # _with_hm	- with soper/hawkmod patch, but without hoop3.
-# _without_ip6	- without ipv6 support.
+# _without_ipv6	- without ipv6 support.
 #
 Summary:	Internet Relay Chat Server
 Summary(pl):	Serwer IRC (Internet Relay Chat)
@@ -67,7 +67,7 @@ wspiera tak¿e protokó³ IPv6.
 	--logdir=%{_var}/log/%{name} \
 	--enable-dsm \
 	--with-zlib \
-%{?!_without_ip6:--enable-ip6}
+%{?!_without_ipv6:--enable-ip6}
 
 cd "`support/config.guess`"
 %{__make} all
@@ -92,8 +92,8 @@ install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/%{name}
 install %{SOURCE2} $RPM_BUILD_ROOT/etc/sysconfig/%{name}
 install %{SOURCE3} $RPM_BUILD_ROOT/etc/logrotate.d/%{name}
 
-%{?!_without_ip6:tr ':' '%' < $RPM_BUILD_ROOT%{_sysconfdir}/example.conf > $RPM_BUILD_ROOT%{_sysconfdir}/ircd.conf}
-%{?_without_ip6:install $RPM_BUILD_ROOT%{_sysconfdir}/example.conf $RPM_BUILD_ROOT%{_sysconfdir}/ircd.conf}
+%{?!_without_ipv6:tr ':' '%' < $RPM_BUILD_ROOT%{_sysconfdir}/example.conf > $RPM_BUILD_ROOT%{_sysconfdir}/ircd.conf}
+%{?_without_ipv6:install $RPM_BUILD_ROOT%{_sysconfdir}/example.conf $RPM_BUILD_ROOT%{_sysconfdir}/ircd.conf}
 
 rm -f $RPM_BUILD_ROOT%{_sysconfdir}/example.conf
 
