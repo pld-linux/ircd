@@ -7,7 +7,7 @@ Summary:	Internet Relay Chat Server
 Summary(pl):	Serwer IRC (Internet Relay Chat)
 Name:		ircd
 Version:	2.10.3p3
-Release:	2
+Release:	3
 License:	GPL
 Group:		Daemons
 Source0:	ftp://ftp.irc.org/irc/server/irc%{version}.tgz
@@ -17,17 +17,24 @@ Source3:	%{name}.logrotate
 Patch0:		%{name}-config.patch
 Patch1:		%{name}-linux.patch
 Patch2:		%{name}-hm.patch
-# Orginal: http://jv.irc.cz/hoop3.diff - modfied because we have
+# Orginal: http://jv.irc.cz/hoop3.diff - modified because we have
 # MAX_CONNECTIONS already redefined in ircd-config.patch.
 # Also MIN_CHANOP_SERV, MIN_CHANOP_CHAN, MIN_CHANOP_USR to 0.
 Patch3:		%{name}-hoop3.diff
 URL:		http://www.irc.org/
-BuildRequires:	zlib-devel
+#BuildRequires:	autoconf
 BuildRequires:	ncurses-devel
 BuildRequires:	textutils
-BuildRequires:	autoconf
+BuildRequires:	zlib-devel
 Prereq:		rc-scripts
-Prereq:		/sbin/chkconfig
+Requires(pre):	/usr/bin/getgid
+Requires(pre):	/bin/id
+Requires(pre):	/usr/sbin/groupadd
+Requires(pre):	/usr/sbin/useradd
+Requires(post):	fileutils
+Requires(post,preun):	/sbin/chkconfig
+Requires(postun):	/usr/sbin/userdel
+Requires(postun):	/usr/sbin/groupdel
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 Obsoletes:	ircd-hybrid
 
@@ -111,7 +118,7 @@ rm -rf $RPM_BUILD_ROOT
 %pre
 if [ -n "`getgid ircd`" ]; then
 	if [ "`getgid ircd`" != "75" ]; then
-		echo "Warning: group ircd haven't gid=75. Correct this before installing ircd" 1>&2
+		echo "Error: group ircd doesn't have gid=75. Correct this before installing ircd." 1>&2
 		exit 1
 	fi
 else
@@ -119,7 +126,7 @@ else
 fi
 if [ -n "`id -u ircd 2>/dev/null`" ]; then
 	if [ "`id -u ircd`" != "75" ]; then
-		echo "Warning: user ircd haven't uid=75. Correct this before installing ircd" 1>&2
+		echo "Error: user ircd doesn't have uid=75. Correct this before installing ircd." 1>&2
 		exit 1
 	fi
 else
