@@ -83,7 +83,7 @@ install -d $RPM_BUILD_ROOT{%{_var}/log/ircd,%{_libdir}/ircd,%{_sbindir},%{_mandi
 cd "`support/config.guess`"
 
 %{__make} install \
-	DESTDIR=$RPM_BUILD_ROOT \\
+	DESTDIR=$RPM_BUILD_ROOT \
 	client_man_dir=$RPM_BUILD_ROOT%{_mandir}/man1 \
 	conf_man_dir=$RPM_BUILD_ROOT%{_mandir}/man5 \
 	server_man_dir=$RPM_BUILD_ROOT%{_mandir}/man8
