@@ -1,0 +1,10 @@
+diff -urN irc2.10.3p6.orig/common/os.h irc2.10.3p6/common/os.h
+--- irc2.10.3p6.orig/common/os.h	2000-02-03 18:57:00.000000000 +0100
++++ irc2.10.3p6/common/os.h	2004-04-18 14:01:29.000000000 +0200
+@@ -757,5 +757,5 @@
+ # define	IN_ADDR		in_addr
+ 
+ # define WHOSTENTP(x) (x)
+-# define IRCDCONF_DELIMITER ':'
++# define IRCDCONF_DELIMITER '%'
+ #endif
