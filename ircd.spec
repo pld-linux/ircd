@@ -33,7 +33,7 @@ wspiera tak¿e protokó³ IPv6.
 
 %prep
 %setup -q -n irc%{version}
-#%patch0 -p1
+%patch0 -p1
 %patch1 -p1
 
 %build
@@ -45,7 +45,8 @@ wspiera tak¿e protokó³ IPv6.
 %configure2_13 \
 	--logdir=%{_var}/log/%{name} \
 	--enable-ip6 \
-	--enable-dsm
+	--enable-dsm \
+	--with-zlib
 
 cd "`support/config.guess`"
 %{__make} all
