@@ -29,6 +29,7 @@ if is_yes "$IPV6_NETWORKING" && [ -x /usr/sbin/ircd6 ]; then
     IRCD="/usr/sbin/ircd6"
 else
     IRCD="/usr/sbin/ircd"
+fi
 
 RETVAL=0
 # See how we were called.
