@@ -74,19 +74,16 @@ cd "`support/config.guess`"
 
 %install
 rm -rf $RPM_BUILD_ROOT
-
+install -d $RPM_BUILD_ROOT{%{_var}/log/ircd,%{_libdir}/ircd,%{_sbindir},%{_mandir}/man{1,3,5,8}} \
+	$RPM_BUILD_ROOT{%{_sysconfdir},/etc/{rc.d/init.d,sysconfig,logrotate.d}} \
+	$RPM_BUILD_ROOT%{_localstatedir}
 cd "`support/config.guess`"
-install -d $RPM_BUILD_ROOT%{_var}/log/ircd
-install -d $RPM_BUILD_ROOT%{_libdir}/ircd
-install -d $RPM_BUILD_ROOT%{_sbindir}
-install -d $RPM_BUILD_ROOT%{_mandir}/man{1,3,5,8}
-install -d $RPM_BUILD_ROOT{%{_sysconfdir},/etc/{rc.d/init.d,sysconfig,logrotate.d}}
-install -d $RPM_BUILD_ROOT%{_localstatedir}
 
-%{__make} install DESTDIR=$RPM_BUILD_ROOT \
-	     client_man_dir=$RPM_BUILD_ROOT%{_mandir}/man1 \
-	     conf_man_dir=$RPM_BUILD_ROOT%{_mandir}/man5 \
-	     server_man_dir=$RPM_BUILD_ROOT%{_mandir}/man8
+%{__make} install \
+	DESTDIR=$RPM_BUILD_ROOT \\
+	client_man_dir=$RPM_BUILD_ROOT%{_mandir}/man1 \
+	conf_man_dir=$RPM_BUILD_ROOT%{_mandir}/man5 \
+	server_man_dir=$RPM_BUILD_ROOT%{_mandir}/man8
 
 install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/%{name}
 install %{SOURCE2} $RPM_BUILD_ROOT/etc/sysconfig/%{name}
