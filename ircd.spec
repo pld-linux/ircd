@@ -39,7 +39,7 @@ wspiera tak¿e protokó³ IPv6.
 %patch2 -p1
 
 %build
-cd support 
+cd support
 	autoheader
 	autoconf
 cd ..
