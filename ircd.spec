@@ -144,7 +144,7 @@ if [ -n "`getgid ircd`" ]; then
 		exit 1
 	fi
 else
-	%{_sbindir}/groupadd -f -g 75 ircd 2> /dev/null
+	/usr/sbin/groupadd -f -g 75 ircd 2> /dev/null
 fi
 if [ -n "`id -u ircd 2>/dev/null`" ]; then
 	if [ "`id -u ircd`" != "75" ]; then
@@ -152,7 +152,7 @@ if [ -n "`id -u ircd 2>/dev/null`" ]; then
 		exit 1
 	fi
 else
-	%{_sbindir}/useradd -g ircd -d /etc/%{name} -u 75 -s /bin/true -c "IRC Service account" ircd 2> /dev/null
+	/usr/sbin/useradd -g ircd -d /etc/%{name} -u 75 -s /bin/true -c "IRC Service account" ircd 2> /dev/null
 fi
 
 %post
@@ -178,8 +178,8 @@ fi
 %postun
 # If package is being erased for the last time.
 if [ "$1" = "0" ]; then
-	%{_sbindir}/userdel ircd 2> /dev/null
-	%{_sbindir}/groupdel ircd 2> /dev/null
+	/usr/sbin/userdel ircd 2> /dev/null
+	/usr/sbin/groupdel ircd 2> /dev/null
 fi
 
 %files
