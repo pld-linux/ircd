@@ -7,7 +7,7 @@ Summary:	Internet Relay Chat Server
 Summary(pl):	Serwer IRC (Internet Relay Chat)
 Name:		ircd
 Version:	2.10.3p6
-Release:	1
+Release:	2
 License:	GPL
 Group:		Daemons
 Source0:	ftp://ftp.irc.org/irc/server/irc%{version}.tgz
@@ -80,7 +80,7 @@ cd "`support/config.guess`"
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT{%{_var}/log/ircd,%{_libdir}/ircd,%{_sbindir},%{_mandir}/man{1,3,5,8}} \
+install -d $RPM_BUILD_ROOT{%{_var}/log/{,archiv/}ircd,%{_libdir}/ircd,%{_sbindir},%{_mandir}/man{1,3,5,8}} \
 	$RPM_BUILD_ROOT{%{_sysconfdir},/etc/{rc.d/init.d,sysconfig,logrotate.d}} \
 	$RPM_BUILD_ROOT%{_localstatedir}
 cd "`support/config.guess`"
@@ -170,6 +170,7 @@ fi
 %attr(755,root,root) %{_bindir}/*
 %attr(755,root,root) %{_sbindir}/*
 %attr(770,root,ircd) %dir %{_var}/log/ircd
+%attr(770,root,ircd) %dir %{_var}/log/archiv/ircd
 %attr(770,root,ircd) %dir %{_localstatedir}
 %attr(640,ircd,ircd) %ghost %{_localstatedir}/ircd.pid
 %attr(640,ircd,ircd) %ghost %{_localstatedir}/ircd.tune
