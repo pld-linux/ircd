@@ -71,9 +71,9 @@ cat << EOF > $RPM_BUILD_ROOT%{_chroot}%{_sysconfdir}/ircd/ircd.motd
 
 Powered by PLD Linux Distibution IRC Server with IPv6 support!
 
-WWW:        http://www.pld.org.pl/
-FTP:        ftp://ftp.pld.org.pl/
-e-mail:      feedback@pld.org.pl
+WWW:        http://www.pld-linux.org/
+FTP:        ftp://ftp.pld-linux.org/
+e-mail:      feedback@pld-linux.org
 
 EOF
 
