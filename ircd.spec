@@ -1,15 +1,16 @@
+Summary:	Internet Relay Chat Server
+Summary(pl):	Serwer IRC (Internet Relay Chat)
 Name:		ircd
 Version:	2.10.3p1
 Release:	1
 License:	GPL
-Summary:	Internet Relay Chat Server
-Summary(pl):	Serwer IRC (Internet Relay Chat)
 Group:		Daemons
 Group(de):	Server
 Group(pl):	Serwery
 URL:		http://www.xs4all.nl/~carlo17/ircd-dev/
 Source0:	ftp://ftp.funet.fi/pub/unix/irc/server/irc%{version}.tgz
 Source1:	%{name}.init
+Source2:	%{name}.sysconfig
 Patch0:		%{name}-config.patch
 Patch1:		%{name}-linux.patch
 Patch2:		%{name}-no_libnsl.patch
@@ -56,7 +57,7 @@ install -d $RPM_BUILD_ROOT%{_var}/log/ircd
 install -d $RPM_BUILD_ROOT%{_libdir}/ircd
 install -d $RPM_BUILD_ROOT%{_sbindir}
 install -d $RPM_BUILD_ROOT%{_mandir}/man{1,3,5,8}
-install -d $RPM_BUILD_ROOT{%{_sysconfdir}/ircd,/etc/rc.d/init.d}
+install -d $RPM_BUILD_ROOT{%{_sysconfdir},/etc/rc.d/init.d,/etc/sysconfig}
 install -d $RPM_BUILD_ROOT%{_localstatedir}
 
 %{__make} install DESTDIR=$RPM_BUILD_ROOT \
@@ -65,6 +66,7 @@ install -d $RPM_BUILD_ROOT%{_localstatedir}
 	     server_man_dir=$RPM_BUILD_ROOT%{_mandir}/man8
 
 install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/%{name}
+install %{SOURCE2} $RPM_BUILD_ROOT/etc/sysconfig/%{name}
 
 tr ':' '%' < $RPM_BUILD_ROOT%{_sysconfdir}/example.conf > \
 	$RPM_BUILD_ROOT%{_sysconfdir}/ircd.conf
@@ -91,9 +93,22 @@ touch $RPM_BUILD_ROOT%{_localstatedir}/ircd.{pid,tune}
 rm -rf $RPM_BUILD_ROOT
 
 %pre
-%{_sbindir}/groupadd -f -g 75 ircd 2> /dev/null
-%{_sbindir}/useradd -g ircd -d /etc/%{name} -u 75 -s /bin/true ircd 2> /dev/null
-
+if [ -n "`getgid ircd`" ]; then
+	if [ "`getgid ircd`" != "75" ]; then
+		echo "Warning: group ircd haven't gid=75. Correct this before installing ircd" 1>&2
+		exit 1
+	fi
+else
+	%{_sbindir}/groupadd -f -g 75 ircd 2> /dev/null
+fi
+if [ -n "`id -u ircd 2>/dev/null`" ]; then
+	if [ "`id -u ircd`" != "75" ]; then
+		echo "Warning: user ircd haven't uid=75. Correct this before installing ircd" 1>&2
+		exit 1
+	fi
+else
+	%{_sbindir}/useradd -g ircd -d /etc/%{name} -u 75 -s /bin/true ircd 2> /dev/null
+fi
 %post
 /sbin/chkconfig --add ircd
 if [ -f /var/lock/subsys/httpd ]; then
@@ -134,3 +149,4 @@ fi
 %attr(644,root,ircd) %{_sysconfdir}/ircd.motd
 %{_mandir}/man*/*
 %attr(754,root,root) /etc/rc.d/init.d/%{name}
+%attr(644,root,root) /etc/sysconfig/%{name}

@@ -12,6 +12,9 @@
 # Source networking configuration.
 . /etc/sysconfig/network
 
+# Get service config
+[ -f /etc/sysconfig/ircd ] && . /etc/sysconfig/ircd
+
 # Check that networking is up.
 if is_no "${NETWORKING}"; then
 	msg_Network_Down IRCd
@@ -23,17 +26,24 @@ fi
 case "$1" in
   start)
 	# Start daemons.
-	msg_starting ircd
-	daemon ircd -c
+	# Check if the service is already running?
+	if [ ! -f /var/lock/subsys/ircd ]; then
+		msg_starting "IRCd Server"
+		daemon ircd -c
+	else
+		msg_Already_Running IRCd
+		exit 1
+	fi
 	touch /var/lock/subsys/ircd
 	;;
   stop)
 	# Stop daemons.
-	msg_stopping ircd
+	msg_stopping "IRCd Server"
 	killproc ircd
+	rm -f /var/run/ircd.pid
 	rm -f /var/lock/subsys/ircd
 	;;
-  restart)
+  restart|reload)
   	$0 stop
 	$0 start
 	;;
@@ -41,7 +51,7 @@ case "$1" in
   	status ircd
 	;;
   *)
-	msg_Usage "$0 {start|stop|restart|status}"
+	msg_Usage "$0 {start|stop|restart|reload|status}"
 	exit 1
 esac
 
