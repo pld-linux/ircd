@@ -115,7 +115,7 @@ cd $tdir
 cd ..
 install .ircd6/${tdir}/irc $RPM_BUILD_ROOT%{_bindir}/ircs6
 for f in chkconf iauth ircd ircd-mkpasswd ircdwatch; do
-	install .ircd6/${tdir}/${f} $RPM_BUILD_ROOT%{_sbindir}/${f}.6
+	install .ircd6/${tdir}/${f} $RPM_BUILD_ROOT%{_sbindir}/${f}6
 done
 
 install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/%{name}
