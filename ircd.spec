@@ -163,8 +163,8 @@ fi
 
 %files
 %defattr(644,root,root,755)
-%doc doc/{2.10-New,2.9-New,Authors,ChangeLog,Etiquette,SERVICE.txt,m4macros}
-%doc doc/{*.conf.example,rfc*.txt,README,RELEASE_{LOG,NOTES}}
+%doc doc/{2.11-New,2.10-New,2.9-New,Authors,ChangeLog,Etiquette,SERVICE.txt,m4macros}
+%doc doc/{*.conf.example,rfc*.txt,README,RELEASE_{LOG,NOTES},stats.txt,ISO-3166-1}
 %attr(755,root,root) %{_sbindir}/*
 %attr(770,root,ircd) %dir %{_var}/log/ircd
 %attr(770,root,ircd) %dir %{_var}/log/archiv/ircd
