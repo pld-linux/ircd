@@ -1,6 +1,6 @@
 Name:		ircd
 Version:	2.10.3
-Release:	1
+Release:	2
 Copyright:	GPL
 Summary:	Internet Relay Chat Server
 Summary(pl):	Serwer IRC (Internet Relay Chat)
@@ -91,7 +91,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %pre
 %{_sbindir}/groupadd -f -g 75 ircd 2> /dev/null
-%{_sbindir}/useradd -M -g ircd -d /etc/%{name} -u 75 -s /bin/true ircd 2> /dev/null
+%{_sbindir}/useradd -g ircd -d /etc/%{name} -u 75 -s /bin/true ircd 2> /dev/null
 
 %post
 /sbin/chkconfig --add ircd
