@@ -71,7 +71,7 @@
 #define CHROOTDIR
 
 #if defined(CHROOTDIR)
-  #define ROOT_PATH	"/lib/var/ircd"
+  #define ROOT_PATH	"/var/lib/ircd"
 #endif
 
 /* ENABLE_SUMMON
