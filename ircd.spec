@@ -147,10 +147,10 @@ fi
 %attr(640,ircd,ircd) %ghost %{_localstatedir}/ircd.pid
 %attr(640,ircd,ircd) %ghost %{_localstatedir}/ircd.tune
 %attr(750,root,ircd) %dir %{_sysconfdir}
-%attr(640,root,ircd) %config(noreplace) %{_sysconfdir}/ircd.conf
-%attr(640,root,ircd) %config(noreplace) %{_sysconfdir}/iauth.conf
-%attr(644,root,ircd) %{_sysconfdir}/ircd.m4
-%attr(644,root,ircd) %{_sysconfdir}/ircd.motd
+%attr(660,root,ircd) %config(noreplace) %{_sysconfdir}/ircd.conf
+%attr(660,root,ircd) %config(noreplace) %{_sysconfdir}/iauth.conf
+%attr(664,root,ircd) %{_sysconfdir}/ircd.m4
+%attr(664,root,ircd) %{_sysconfdir}/ircd.motd
 %{_mandir}/man*/*
 %attr(754,root,root) /etc/rc.d/init.d/%{name}
 %attr(644,root,root) /etc/sysconfig/%{name}
