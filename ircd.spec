@@ -195,11 +195,11 @@ fi
 %attr(640,ircd,ircd) %ghost %{_localstatedir}/ircd.pid
 %attr(640,ircd,ircd) %ghost %{_localstatedir}/ircd.tune
 %attr(750,root,ircd) %dir %{_sysconfdir}
-%attr(660,root,ircd) %config(noreplace) %{_sysconfdir}/ircd.conf
-%attr(660,root,ircd) %config(noreplace) %{_sysconfdir}/iauth.conf
-%attr(664,root,ircd) %config(noreplace) %{_sysconfdir}/ircd.motd
+%attr(660,root,ircd) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/ircd.conf
+%attr(660,root,ircd) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/iauth.conf
+%attr(664,root,ircd) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/ircd.motd
 %attr(664,root,ircd) %{_sysconfdir}/ircd.m4
 %{_mandir}/man*/*
 %attr(754,root,root) /etc/rc.d/init.d/%{name}
-%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/sysconfig/%{name}
-%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/logrotate.d/%{name}
+%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/%{name}
+%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/logrotate.d/%{name}
