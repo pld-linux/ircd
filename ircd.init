@@ -1,9 +1,9 @@
 #!/bin/sh
 #
-# ircd       This shell script takes care of starting and stopping ircd.
+# ircd		This shell script takes care of starting and stopping ircd.
 #
-# chkconfig: 234 75 30
-# description: Internet Relay Chat Server.
+# chkconfig:	234 75 30
+# description:	Internet Relay Chat Server.
 #
 
 # Source function library.
@@ -16,48 +16,62 @@
 [ -f /etc/sysconfig/ircd ] && . /etc/sysconfig/ircd
 
 # Check that networking is up.
-if is_no "${NETWORKING}"; then
-	msg_network_down IRCd
-	exit 1
+if is_yes "${NETWORKING}"; then
+	if [ ! -f /var/lock/subsys/network ]; then
+		msg_network_down IRCd
+		exit 1
+	fi
+else
+	exit 0
 fi
 
+
+RETVAL=0
 
 # See how we were called.
 case "$1" in
   start)
-	# Start daemons.
 	# Check if the service is already running?
 	if [ ! -f /var/lock/subsys/ircd ]; then
+		# Start daemons.
 		msg_starting "IRCd Server"
 		daemon ircd -c
+		touch /var/lock/subsys/ircd
 	else
 		msg_already_running IRCd
 		exit 1
 	fi
-	touch /var/lock/subsys/ircd
 	;;
   stop)
-	# Stop daemons.
-	msg_stopping "IRCd Server"
-	killproc ircd
-	rm -f /var/run/ircd.pid
-	rm -f /var/lock/subsys/ircd
+	# Check if the service is already running?
+	if [ -f /var/lock/subsys/ircd ]; then
+		# Stop daemons.
+		msg_stopping "IRCd Server"
+		killproc ircd
+		rm -f /var/run/ircd.pid
+		rm -f /var/lock/subsys/ircd
+	else
+		msg_not_running IRCd
+		exit 1
+	fi
 	;;
   reload)
-  	msg_reloading "IRCd Server"
+	msg_reloading "IRCd Server"
+	busy
 	killproc ircd -HUP
+	RETVAL=$?
+	[ $RETVAL -eq 0 ] && ok || died
 	;;
   restart)
-  	$0 stop
+	$0 stop
 	$0 start
 	;;
   status)
-  	status ircd
+	status ircd
 	;;
   *)
 	msg_usage "$0 {start|stop|restart|reload|status}"
 	exit 1
 esac
 
-exit 0
-
+exit $RETVAL
