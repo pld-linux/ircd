@@ -1,6 +1,6 @@
 diff -urN irc2.10.3.orig/support/config.h.dist irc2.10.3/support/config.h.dist
---- irc2.10.3.orig/support/config.h.dist	Tue Sep  7 21:37:13 1999
-+++ irc2.10.3/support/config.h.dist	Wed Sep  8 14:10:38 1999
+--- irc2.10.3.orig/support/config.h.dist	Mon Jul 12 00:11:17 1999
++++ irc2.10.3/support/config.h.dist	Thu May  2 00:08:28 2002
 @@ -118,7 +118,7 @@
   * if 'OPER_x' is undefined so you can't give local operators more rights
   * than global ones.
@@ -10,6 +10,51 @@ diff -urN irc2.10.3.orig/support/config.h.dist irc2.10.3/support/config.h.dist
  #define	OPER_REHASH
  #undef	OPER_RESTART
  #define	OPER_DIE
+@@ -138,7 +138,7 @@
+  * This should be at *least* 4: 2 listen ports (1 tcp, 1 udp)
+  *				1 dns port, 1 client
+  */
+-#define MAXCONNECTIONS	50
++#define MAXCONNECTIONS	100
+ 
+ /* MAXIMUM LINKS
+  *
+@@ -167,7 +167,7 @@
+  * a server is in class 0 (the default class if none is set).
+  *
+  */
+-#define MAXIMUM_LINKS 1
++/* #define MAXIMUM_LINKS 1 */
+ 
+ /*
+  * A pure non-routing leaf server can undefine HUB for best performance.
+@@ -175,7 +175,7 @@
+  * A HUB Server has many servers connect to it at the same as opposed
+  * to a leaf which just has 1 server (typically the uplink).
+  */
+-/* #define	HUB */
++#define	HUB 
+ 
+ #ifdef HUB
+ /*
+@@ -262,7 +262,7 @@
+  * define this if you want to use crypted passwords for operators in your
+  * ircd.conf file. See contrib/mkpasswd/README for more details on this.
+  */
+-#undef	CRYPT_OPER_PASSWORD
++#define		CRYPT_OPER_PASSWORD
+ 
+ /*
+  * If you want to store encrypted passwords in N-lines for server links,
+@@ -270,7 +270,7 @@
+  * need not be the same for both, as long as hte opposite end has the
+  * right password in the opposite line.  See INSTALL doc for more details.
+  */
+-#undef	CRYPT_LINK_PASSWORD
++#define		CRYPT_LINK_PASSWORD
+ 
+ /*
+  * define this if you enable summon and if you want summon to look for the
 @@ -299,8 +299,8 @@
   * define IRC_UID to that UID.  This should only be defined if you are running
   * as root and even then perhaps not.
@@ -31,8 +76,8 @@ diff -urN irc2.10.3.orig/support/config.h.dist irc2.10.3/support/config.h.dist
  /*
   * Defining this will add an artificial 2 seconds delay for accepting
 diff -urN irc2.10.3.orig/support/iauth.conf irc2.10.3/support/iauth.conf
---- irc2.10.3.orig/support/iauth.conf	Tue Sep  7 21:37:13 1999
-+++ irc2.10.3/support/iauth.conf	Wed Sep  8 14:11:12 1999
+--- irc2.10.3.orig/support/iauth.conf	Mon Jul  5 00:15:43 1999
++++ irc2.10.3/support/iauth.conf	Thu May  2 00:00:11 2002
 @@ -5,7 +5,8 @@
  #
  
