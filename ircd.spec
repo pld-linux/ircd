@@ -10,6 +10,8 @@ Source1:	%{name}.init
 Source2:	irc2.10.3p1-config.h
 URL:		http://www.irc.org/
 BuildRequires:	zlib-devel
+BuildRequires:  ncurses-devel                                                   BuildRequires:  textutils
+BuildRequires:	nss_compat
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 PreReq:		/sbin/chkconfig
 
