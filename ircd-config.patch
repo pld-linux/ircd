@@ -19,15 +19,6 @@ diff -urN irc2.10.3.orig/support/config.h.dist irc2.10.3/support/config.h.dist
  
  /* MAXIMUM LINKS
   *
-@@ -167,7 +167,7 @@
-  * a server is in class 0 (the default class if none is set).
-  *
-  */
--#define MAXIMUM_LINKS 1
-+/* #define MAXIMUM_LINKS 1 */
- 
- /*
-  * A pure non-routing leaf server can undefine HUB for best performance.
 @@ -175,7 +175,7 @@
   * A HUB Server has many servers connect to it at the same as opposed
   * to a leaf which just has 1 server (typically the uplink).
