@@ -2,16 +2,16 @@
 # Conditional build
 %bcond_with	crypt	# build with crypted passwords support
 #
-%define	_rc	b14
+%define	_rc	b15
 Summary:	Internet Relay Chat Server
 Summary(pl):	Serwer IRC (Internet Relay Chat)
 Name:		ircd
 Version:	2.11.0
-Release:	0.%{_rc}.3
+Release:	0.%{_rc}.1
 License:	GPL
 Group:		Daemons
 Source0:	ftp://ftp.irc.org/irc/server/BETA/irc%{version}%{_rc}.tgz
-# Source0-md5:	6e205149edf91288e313b7598fc0858c
+# Source0-md5:	f4ebc9a5c445e0aec6fded0538d1c51c
 Source1:	%{name}.init
 Source2:	%{name}.sysconfig
 Source3:	%{name}.logrotate
@@ -20,8 +20,6 @@ Patch0:		%{name}-linux.patch
 Patch1:		%{name}-conf_delimiter_4_easy_upgrade.patch
 Patch2:		%{name}-config.patch
 Patch3:		%{name}-crypt.patch
-Patch4:		%{name}-m_ping.patch
-Patch5:		%{name}-va_list.patch
 URL:		http://www.irc.org/
 #BuildRequires:	autoconf
 BuildRequires:	automake
@@ -62,8 +60,6 @@ jest tak¿e wersja obs³uguj±ca IPv6.
 %patch1 -p1
 %patch2 -p1
 %{?with_crypt:%patch3 -p1}
-%patch4 -p1
-%patch5 -p1
 
 %build
 cp -f /usr/share/automake/config.* support
