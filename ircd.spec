@@ -14,6 +14,7 @@ Patch1:		%{name}-linux.patch
 BuildPrereq:    zlib-devel
 BuildPrereq:	ncurses-devel
 BuildPrereq:	textutils
+Requires:	rc-scripts
 Prereq:		/sbin/chkconfig
 BuildRoot:      /tmp/%{name}-%{version}-root
 Obsoletes:	ircd6
