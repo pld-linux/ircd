@@ -1,6 +1,6 @@
 Name:		ircd
-Version:	2.10.3
-Release:	4
+Version:	2.10.3p1
+Release:	1
 License:	GPL
 Summary:	Internet Relay Chat Server
 Summary(pl):	Serwer IRC (Internet Relay Chat)
@@ -21,6 +21,7 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 Obsoletes:	ircd6
 
 %define		_sysconfdir	/etc/%{name}
+%define		_localstatedir	/var/lib/%{name}
 
 %description
 Ircd is the server (daemon) program for the Internet Relay Chat
@@ -56,6 +57,7 @@ install -d $RPM_BUILD_ROOT%{_libdir}/ircd
 install -d $RPM_BUILD_ROOT%{_sbindir}
 install -d $RPM_BUILD_ROOT%{_mandir}/man{1,3,5,8}
 install -d $RPM_BUILD_ROOT{%{_sysconfdir}/ircd,/etc/rc.d/init.d}
+install -d $RPM_BUILD_ROOT%{_localstatedir}
 
 %{__make} install DESTDIR=$RPM_BUILD_ROOT \
 	     client_man_dir=$RPM_BUILD_ROOT%{_mandir}/man1 \
@@ -80,9 +82,10 @@ EOF
 
 mv -f $RPM_BUILD_ROOT%{_bindir}/irc $RPM_BUILD_ROOT%{_bindir}/ircs
 mv -f $RPM_BUILD_ROOT%{_mandir}/man1/irc.1 $RPM_BUILD_ROOT%{_mandir}/man1/ircs.1
-gzip -9nf $RPM_BUILD_ROOT%{_mandir}/man*/* ../doc/*
 
-touch $RPM_BUILD_ROOT%{_var}/run/ircd.pid
+gzip -9nf $RPM_BUILD_ROOT%{_mandir}/man*/* ../doc/{2.10-New,2.9-New,Authors,ChangeLog,Etiquette,SERVICE.txt,m4macros}
+
+touch $RPM_BUILD_ROOT%{_localstatedir}/ircd.{pid,tune}
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -93,10 +96,18 @@ rm -rf $RPM_BUILD_ROOT
 
 %post
 /sbin/chkconfig --add ircd
+if [ -f /var/lock/subsys/httpd ]; then
+	/etc/rc.d/init.d/ircd restart 1>&2
+else
+	echo "Run \"/etc/rc.d/init.d/ircd start\" to start IRC daemon."
+fi
 
 %preun
 # If package is being erased for the last time.
 if [ $1 = 0 ]; then
+	if [ -f /var/lock/subsys/ircd ]; then
+		/etc/rc.d/init.d/ircd stop 1>&2
+	fi
 	/sbin/chkconfig --del ircd
 fi
 
@@ -109,15 +120,17 @@ fi
 
 %files
 %defattr(644,root,root,755)
-%doc doc/{2.10-New,2.9-New,Authors,ChangeLog,Etiquette,INSTALL.txt,SERVICE.txt,m4macros}.gz
+%doc doc/*.gz
 %attr(755,root,root) %{_bindir}/*
 %attr(755,root,root) %{_sbindir}/*
-%attr(750,root,ircd) %dir %{_sysconfdir}
-%attr(644,root,ircd) %{_sysconfdir}/ircd.motd
 %attr(750,ircd,ircd) %dir %{_var}/log/ircd
-%attr(644,ircd,ircd) %dir %{_var}/run/ircd.pid
-%attr(644,root,root) %{_mandir}/man[158]/*
-%attr(754,root,root) /etc/rc.d/init.d/%{name}
-%attr(644,root,root) %{_sysconfdir}/ircd.m4
+%attr(750,ircd,ircd) %dir %{_localstatedir}
+%attr(640,ircd,ircd) %ghost %{_localstatedir}/ircd.pid
+%attr(640,ircd,ircd) %ghost %{_localstatedir}/ircd.tune
+%attr(750,root,ircd) %dir %{_sysconfdir}
 %attr(640,root,ircd) %config(noreplace) %{_sysconfdir}/ircd.conf
 %attr(640,root,ircd) %config(noreplace) %{_sysconfdir}/iauth.conf
+%attr(644,root,ircd) %{_sysconfdir}/ircd.m4
+%attr(644,root,ircd) %{_sysconfdir}/ircd.motd
+%{_mandir}/man*/*
+%attr(754,root,root) /etc/rc.d/init.d/%{name}
