@@ -15,7 +15,7 @@ Patch2:		%{name}-no_libnsl.patch
 BuildPrereq:	zlib-devel
 BuildPrereq:	ncurses-devel
 BuildPrereq:	textutils
-Requires:	rc-scripts
+Prereq:		rc-scripts
 Prereq:		/sbin/chkconfig
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 Obsoletes:	ircd6
