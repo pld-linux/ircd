@@ -74,9 +74,9 @@ cp -f /usr/share/automake/config.* support
 # cannot regenerate, so use workaround
 export ac_cv_lib_nsl_socket=no
 %configure2_13 \
-        --logdir=%{_var}/log/%{name} \
-        --enable-dsm \
-        --with-zlib \
+	--logdir=%{_var}/log/%{name} \
+	--enable-dsm \
+	--with-zlib \
 	--enable-ip6
 
 cd "`support/config.guess`"
