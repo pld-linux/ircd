@@ -10,7 +10,7 @@ Source1:	%{name}.init
 Source2:	%{name}.sysconfig
 Patch0:		%{name}-config.patch
 Patch1:		%{name}-linux.patch
-Patch2:		ircd-hm.patch
+Patch2:		%{name}-hm.patch
 URL:		http://www.irc.org/
 BuildRequires:	zlib-devel
 BuildRequires:	ncurses-devel
@@ -78,7 +78,7 @@ rm -f $RPM_BUILD_ROOT%{_sysconfdir}/example.conf
 
 cat << EOF > $RPM_BUILD_ROOT%{_sysconfdir}/ircd.motd
 
-Powered by PLD Linux Distibution IRC Server with IPv6 support!
+Powered by PLD Linux Distribution IRC Server with IPv6 support!
 
 IRC:    irc.pld.org.pl irc6.pld.org.pl
 WWW:        http://www.pld.org.pl/
