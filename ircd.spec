@@ -142,7 +142,7 @@ else
 fi
 touch /var/log/ircd/{auth,opers,rejects,users,ircd.log}
 chmod 640 /var/log/ircd/*
-chown ircd.ircd /var/log/ircd/*
+chown ircd:ircd /var/log/ircd/*
 
 %preun
 # If package is being erased for the last time.
