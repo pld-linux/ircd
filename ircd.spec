@@ -1,13 +1,13 @@
 #
 # Conditional build:
 %bcond_with	hm	# with soper/hawkmod patch, but without hoop3
-%bcond_without	ipv6	# without IPv6 support
+%bcond_with	ipv6	# without IPv6 support
 #
 Summary:	Internet Relay Chat Server
 Summary(pl):	Serwer IRC (Internet Relay Chat)
 Name:		ircd
 Version:	2.10.3p6
-Release:	2
+Release:	3
 License:	GPL
 Group:		Daemons
 Source0:	ftp://ftp.irc.org/irc/server/irc%{version}.tgz
@@ -46,11 +46,13 @@ Obsoletes:	ircd-hybrid
 
 %description
 Ircd is the server (daemon) program for the Internet Relay Chat
-Program. This version supports IPv6, too.
+Program. IPv6 support is broken (server won't run on non-IPv6 system),
+so it's disabled.
 
 %description -l pl
-Ircd jest serwerem us³ugi IRC (Internet Relay Chat Program). Ta wersja
-wspiera tak¿e protokó³ IPv6.
+Ircd jest serwerem us³ugi IRC (Internet Relay Chat Program). Wsparcie
+dla protoko³u IPv6 jest wy³±czone, gdy¿ wtedy serwer nie dzia³a na
+systemach bez niego.
 
 %prep
 %setup -q -n irc%{version}
