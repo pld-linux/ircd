@@ -1,13 +1,13 @@
 #
 # Conditional build:
-# _with_hm	- with soper/hawkmod patch
-# _without_ip6	- without ipv6 support
+# _with_hm	- with soper/hawkmod patch, but without hoop3.
+# _without_ip6	- without ipv6 support.
 #
 Summary:	Internet Relay Chat Server
 Summary(pl):	Serwer IRC (Internet Relay Chat)
 Name:		ircd
 Version:	2.10.3p3
-Release:	1
+Release:	2	
 License:	GPL
 Group:		Daemons
 Source0:	ftp://ftp.irc.org/irc/server/irc%{version}.tgz
@@ -17,6 +17,10 @@ Source3:	%{name}.logrotate
 Patch0:		%{name}-config.patch
 Patch1:		%{name}-linux.patch
 Patch2:		%{name}-hm.patch
+# Orginal: http://jv.irc.cz/hoop3.diff - modfied because we have
+# MAX_CONNECTIONS already redefined in ircd-config.patch.
+# Also MIN_CHANOP_SERV, MIN_CHANOP_CHAN, MIN_CHANOP_USR to 0.
+Patch3:		ircd-hoop3.diff
 URL:		http://www.irc.org/
 BuildRequires:	zlib-devel
 BuildRequires:	ncurses-devel
@@ -43,6 +47,7 @@ wspiera tak¿e protokó³ IPv6.
 %patch0 -p1
 %patch1 -p1
 %{?_with_hm:%patch2 -p1}
+%{?!_with_hm:%patch3 -p1}
 
 %build
 #cd support
