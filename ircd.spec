@@ -5,25 +5,20 @@
 Summary:	Internet Relay Chat Server
 Summary(pl):	Serwer IRC (Internet Relay Chat)
 Name:		ircd
-Version:	2.10.3p7
-Release:	7
+Version:	2.11.0
+Release:	0.1
 License:	GPL
 Group:		Daemons
 Source0:	ftp://ftp.irc.org/irc/server/irc%{version}.tgz
-# Source0-md5:	47fbf2856fa058686dfaa5f446154296
+# Source0-md5:	fb8fcfbb87f0d1cd906f70e4693b492a
 Source1:	%{name}.init
 Source2:	%{name}.sysconfig
 Source3:	%{name}.logrotate
 Source4:	%{name}.conf
 Patch0:		%{name}-linux.patch
-# Hemp2+DK+B5 patch
-# URL: http://akson.sgh.waw.pl/~chopin/ircd/patches/p7--hemp2+DK+B5.diff
-Patch1:		%{name}-hemp2+DK+B5.diff
-Patch2:		%{name}-ac-workaround.patch
-Patch3:		%{name}-conf_delimiter_4_easy_upgrade.patch
-Patch4:		%{name}-config.patch
-Patch5:		%{name}-autoconnect.patch
-Patch6:		%{name}-crypt.patch
+Patch1:		%{name}-conf_delimiter_4_easy_upgrade.patch
+Patch2:		%{name}-config.patch
+Patch3:		%{name}-crypt.patch
 URL:		http://www.irc.org/
 #BuildRequires:	autoconf
 BuildRequires:	automake
@@ -63,17 +58,10 @@ jest tak¿e wersja obs³uguj±ca IPv6.
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
-%patch3 -p1
-%patch4 -p1
-%patch5 -p1
-%{?with_crypt:%patch6 -p1}
+%{?with_crypt:%patch3 -p1}
 
 %build
 cp -f /usr/share/automake/config.* support
-#cd support
-#	autoheader
-#	autoconf
-#cd ..
 
 mdir=$(pwd)
 mkdir .ircd6
@@ -83,24 +71,25 @@ cd .ircd6
 # cannot regenerate, so use workaround
 export ac_cv_lib_nsl_socket=no
 %configure2_13 \
-	--logdir=%{_var}/log/%{name} \
+	--with-logdir=%{_var}/log/%{name} \
 	--enable-dsm \
 	--with-zlib \
 	--enable-ip6
 
 cd "`support/config.guess`"
-%{__make} server
+%{__make} all
 
 cd $mdir
+
 # cannot regenerate, so use workaround
 export ac_cv_lib_nsl_socket=no
 %configure2_13 \
-	--logdir=%{_var}/log/%{name} \
+	--with-logdir=%{_var}/log/%{name} \
 	--enable-dsm \
 	--with-zlib
 
 cd "`support/config.guess`"
-%{__make} server
+%{__make} all
 
 %install
 tdir=$(support/config.guess)
@@ -111,7 +100,7 @@ install -d $RPM_BUILD_ROOT{%{_var}/log/{,archiv/}ircd,%{_libdir}/ircd,%{_sbindir
 	$RPM_BUILD_ROOT%{_localstatedir}
 cd $tdir
 
-%{__make} install-server \
+%{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT \
 	client_man_dir=$RPM_BUILD_ROOT%{_mandir}/man1 \
 	conf_man_dir=$RPM_BUILD_ROOT%{_mandir}/man5 \
@@ -125,9 +114,9 @@ done
 install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/%{name}
 install %{SOURCE2} $RPM_BUILD_ROOT/etc/sysconfig/%{name}
 install %{SOURCE3} $RPM_BUILD_ROOT/etc/logrotate.d/%{name}
-install %{SOURCE4} $RPM_BUILD_ROOT%{_sysconfdir}/%{name}.conf
+install %{SOURCE4} $RPM_BUILD_ROOT/%{_sysconfdir}/%{name}.conf
 
-rm -f $RPM_BUILD_ROOT%{_sysconfdir}/example.conf
+rm -f $RPM_BUILD_ROOT%{_sysconfdir}/{iauth,ircd}.conf.example
 
 cat << EOF > $RPM_BUILD_ROOT%{_sysconfdir}/ircd.motd
 
@@ -169,7 +158,7 @@ if [ -f /var/lock/subsys/ircd ]; then
 else
 	echo "Run \"/etc/rc.d/init.d/ircd start\" to start IRC daemon."
 fi
-touch /var/log/ircd/{auth,opers,rejects,users,ircd.log}
+touch /var/log/ircd/ircd.{auth,opers,rejects,users,log}
 chmod 640 /var/log/ircd/*
 chown ircd:ircd /var/log/ircd/*
 
@@ -191,8 +180,8 @@ fi
 
 %files
 %defattr(644,root,root,755)
-%doc doc/{2.10-New,2.9-New,Authors,ChangeLog,Etiquette,SERVICE.txt,m4macros}
-%doc doc/{example.conf,rfc*.txt,README,RELEASE_{LOG,NOTES}}
+%doc doc/{2.11-New,2.10-New,2.9-New,Authors,ChangeLog,Etiquette,SERVICE.txt,m4macros}
+%doc doc/{*.conf.example,rfc*.txt,README,RELEASE_{LOG,NOTES},stats.txt,ISO-3166-1}
 %attr(755,root,root) %{_sbindir}/*
 %attr(770,root,ircd) %dir %{_var}/log/ircd
 %attr(770,root,ircd) %dir %{_var}/log/archiv/ircd
