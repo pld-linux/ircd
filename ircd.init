@@ -1,0 +1,45 @@
+#!/bin/sh
+#
+# ircd       This shell script takes care of starting and stopping ircd.
+#
+# chkconfig: 234 75 30
+# description: Internet Relay Chat Server.
+#
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+# Source networking configuration.
+. /etc/sysconfig/network
+
+# Check that networking is up.
+[ "${NETWORKING}" == "no" ] && exit 0
+
+# See how we were called.
+case "$1" in
+  start)
+	# Start daemons.
+	show "Starting ircd"
+	daemon ircd
+	touch /var/lock/subsys/ircd
+	;;
+  stop)
+	# Stop daemons.
+	show "Shutting down ircd"
+	killproc ircd
+	rm -f /var/lock/subsys/ircd
+	;;
+  restart)
+  	$0 stop
+	$0 start
+	;;
+  status)
+  	status ircd
+	;;
+  *)
+	echo "Usage: $0 {start|stop|restart|status}"
+	exit 1
+esac
+
+exit 0
+
