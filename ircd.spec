@@ -1,5 +1,5 @@
 Name:		ircd
-Version:	2.10.2p1
+Version:	2.10.3
 Release:	1
 Copyright:	GPL
 Summary:	Internet Relay Chat Server
@@ -32,14 +32,18 @@ Ta wersja wspiera tak¿e protokó³ IPv6.
 %patch1 -p1
 
 %build
-CFLAGS="$RPM_OPT_FLAGS -D_GNU_SOURCE=1" \
+cd support && autoheader && autoconf && cd ..
+CFLAGS="$RPM_OPT_FLAGS" LDFLAGS="-s" \
 ./configure \
-        --with-ncurses \
-        --without-termcap \
-        --prefix=%{_prefix} \
-        --mandir=%{_mandir} \
-        --logdir=%{_var}/log/%{name} \
-        --enable-ip6 --with-zlib %{_target_platform}
+	--prefix=%{_prefix} \
+	--sbindir=%{_sbindir} \
+	--logdir=%{_var}/log/%{name} \
+	--sysconfdir=/etc/%{name} \
+	--localstatedir=%{_var}/run \
+	--with-zlib \
+	--enable-ip6 \
+	--enable-dsm \
+        %{_target_platform}
 
 cd `support/config.guess`
 make all
@@ -54,17 +58,17 @@ install -d		$RPM_BUILD_ROOT%{_sbindir}
 install -d		$RPM_BUILD_ROOT%{_mandir}/man{1,3,5,8}
 install -d		$RPM_BUILD_ROOT/etc/{ircd,rc.d/init.d}
 
-make install prefix=$RPM_BUILD_ROOT%{_prefix} \
+make install DESTDIR=$RPM_BUILD_ROOT \
 	     client_man_dir=$RPM_BUILD_ROOT%{_mandir}/man1 \
 	     conf_man_dir=$RPM_BUILD_ROOT%{_mandir}/man5 \
 	     server_man_dir=$RPM_BUILD_ROOT%{_mandir}/man8
 
 install %{SOURCE1}	$RPM_BUILD_ROOT/etc/rc.d/init.d/%{name}
-tr ':' '%' <		$RPM_BUILD_ROOT/usr/lib/ircd/example.conf > \
-	   		$RPM_BUILD_ROOT/etc/ircd/ircd.conf
-rm -f			$RPM_BUILD_ROOT/usr/lib/ircd/example.conf
+tr ':' '%' <		$RPM_BUILD_ROOT/etc/%{name}/example.conf > \
+	   		$RPM_BUILD_ROOT/etc/%{name}/ircd.conf
+rm -f			$RPM_BUILD_ROOT/etc/%{name}/example.conf
 
-cat << EOF > $RPM_BUILD_ROOT/etc/ircd/ircd.motd
+cat << EOF > $RPM_BUILD_ROOT/etc/%{name}/ircd.motd
 
 Powered by Polish Linux Distibution IRC Server with IPv6 support!
 
@@ -74,17 +78,19 @@ EMail:       pld-list@pld.org.pl
 
 EOF
 
-mv $RPM_BUILD_ROOT%{_bindir}/irc	$RPM_BUILD_ROOT%{_bindir}/ircs
-mv $RPM_BUILD_ROOT%{_mandir}/man1/irc.1	$RPM_BUILD_ROOT%{_mandir}/man1/ircs.1
-gzip -9nf $RPM_BUILD_ROOT%{_mandir}/man*/* ../doc/* || :
-strip $RPM_BUILD_ROOT{%{_bindir}/*,%{_sbindir}/*} || :
+mv		$RPM_BUILD_ROOT%{_bindir}/irc		$RPM_BUILD_ROOT%{_bindir}/ircs
+mv		$RPM_BUILD_ROOT%{_mandir}/man1/irc.1	$RPM_BUILD_ROOT%{_mandir}/man1/ircs.1
+gzip -9nf	$RPM_BUILD_ROOT%{_mandir}/man*/* ../doc/*   || :
+strip		$RPM_BUILD_ROOT{%{_bindir}/*,%{_sbindir}/*} || :
+
+touch		$RPM_BUILD_ROOT%{_var}/run/ircd.pid
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 %pre
-%{_sbindir}/groupadd -f -g 75 ircd
-%{_sbindir}/useradd -M -g ircd -d /usr/lib/ircd/ -u 75 -s /bin/true ircd 2> /dev/null
+%{_sbindir}/groupadd -f -g 75 ircd 2> /dev/null
+%{_sbindir}/useradd -M -g ircd -d /etc/%{name} -u 75 -s /bin/true ircd 2> /dev/null
 
 %post
 /sbin/chkconfig --add ircd
@@ -108,11 +114,12 @@ fi
 %doc doc/{2.10-New,2.9-New,Authors,ChangeLog,Etiquette,INSTALL.txt,SERVICE.txt,m4macros}.gz
 %attr(755,root,root) %{_bindir}/*
 %attr(755,root,root) %{_sbindir}/*
-%attr(750,root,ircd) %dir /etc/ircd
-%attr(644,root,root) %{_libdir}/ircd/*
-%attr(644,root,ircd) /etc/ircd/ircd.motd
-%attr(755,root,root) %dir %{_libdir}/ircd
+%attr(750,root,ircd) %dir /etc/%{name}
+%attr(644,root,ircd) /etc/%{name}/ircd.motd
 %attr(750,ircd,ircd) %dir %{_var}/log/ircd
+%attr(644,ircd,ircd) %dir %{_var}/run/ircd.pid
 %attr(644,root,root) %{_mandir}/man[158]/*
 %attr(754,root,root) /etc/rc.d/init.d/%{name}
-%attr(640,root,ircd) %config(noreplace) /etc/ircd/ircd.conf
+%attr(644,root,root) /etc/%{name}/ircd.m4
+%attr(640,root,ircd) %config(noreplace) /etc/%{name}/ircd.conf
+%attr(640,root,ircd) %config(noreplace) /etc/%{name}/iauth.conf
