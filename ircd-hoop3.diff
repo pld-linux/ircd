@@ -1068,18 +1068,6 @@ diff -ur --new-file irc2.10.3p3/ircd/channel.c irc2.10.3p3-hoop/ircd/channel.c
  			parv[1] = name;
  			(void)m_names(cptr, sptr, 2, parv);
  			if (IsAnonymous(chptr) && !IsQuiet(chptr))
-@@ -2546,9 +2636,9 @@
- 				   name);
- 			continue;
- 		    }
--		comment = (BadPtr(parv[2])) ? parv[0] : parv[2];
-+		comment = (BadPtr(parv[2])) ? "" : parv[2];
- 		if (IsAnonymous(chptr) && (comment == parv[0]))
--			comment = "None";
-+			comment = "";
- 		if (strlen(comment) > (size_t) TOPICLEN)
- 			comment[TOPICLEN] = '\0';
- 
 @@ -2603,7 +2693,7 @@
  	if (IsServer(sptr))
  		sendto_flag(SCH_NOTICE, "KICK from %s for %s %s",
@@ -1954,10 +1942,9 @@ diff -ur --new-file irc2.10.3p3/ircd/s_misc_ext.h irc2.10.3p3-hoop/ircd/s_misc_e
 +    char *parv[]));
 +#endif
  #undef EXTERN
-diff -ur --new-file irc2.10.3p3/ircd/s_serv.c irc2.10.3p3-hoop/ircd/s_serv.c
---- irc2.10.3p3/ircd/s_serv.c	Fri Oct 19 23:09:10 2001
-+++ irc2.10.3p3-hoop/ircd/s_serv.c	Mon Oct 22 17:57:25 2001
-@@ -500,7 +500,11 @@
+--- irc2.10.3p6/ircd/s_serv.c.orig	2004-02-26 14:28:41.000000000 +0100
++++ irc2.10.3p6/ircd/s_serv.c	2004-03-30 22:06:15.611951920 +0200
+@@ -510,7 +510,11 @@
  		/* A server can only be introduced by another server. */
  		if (!IsServer(sptr))
  		    {
@@ -1970,7 +1957,7 @@ diff -ur --new-file irc2.10.3p3/ircd/s_serv.c irc2.10.3p3-hoop/ircd/s_serv.c
  			    "Squitting %s brought by %s (introduced by %s)",
  				    host, get_client_name(cptr, FALSE),
  				    sptr->name);
-@@ -593,6 +597,14 @@
+@@ -603,6 +607,14 @@
  		acptr->serv->snum = find_server_num(acptr->name);
  		SetServer(acptr);
  		istat.is_serv++;
@@ -1985,7 +1972,7 @@ diff -ur --new-file irc2.10.3p3/ircd/s_serv.c irc2.10.3p3-hoop/ircd/s_serv.c
  		add_client_to_list(acptr);
  		(void)add_to_client_hash_table(acptr->name, acptr);
  		(void)add_to_server_hash_table(acptr->serv, cptr);
-@@ -842,7 +854,23 @@
+@@ -852,7 +864,23 @@
  	SetServer(cptr);
  	istat.is_unknown--;
  	istat.is_serv++;
@@ -2009,7 +1996,7 @@ diff -ur --new-file irc2.10.3p3/ircd/s_serv.c irc2.10.3p3-hoop/ircd/s_serv.c
  	nextping = timeofday;
  	sendto_flag(SCH_NOTICE, "Link with %s established. (%X%s)", inpath,
  		    cptr->hopcount, (cptr->flags & FLAGS_ZIP) ? "z" : "");
-@@ -1062,7 +1090,11 @@
+@@ -1072,7 +1100,11 @@
  {
  	char **text = infotext;
  
@@ -2022,7 +2009,7 @@ diff -ur --new-file irc2.10.3p3/ircd/s_serv.c irc2.10.3p3-hoop/ircd/s_serv.c
  	    {
  		sendto_one(sptr, rpl_str(RPL_TRYAGAIN, parv[0]),
  			   "INFO");
-@@ -1352,6 +1384,45 @@
+@@ -1362,6 +1394,45 @@
  		    }
  	return;
  }
@@ -2068,7 +2055,7 @@ diff -ur --new-file irc2.10.3p3/ircd/s_serv.c irc2.10.3p3-hoop/ircd/s_serv.c
  
  int	m_stats(cptr, sptr, parc, parv)
  aClient *cptr, *sptr;
-@@ -1366,10 +1437,21 @@
+@@ -1376,6 +1447,13 @@
  	int	wilds, doall;
  	char	*name, *cm;
  
@@ -2079,18 +2066,28 @@ diff -ur --new-file irc2.10.3p3/ircd/s_serv.c irc2.10.3p3-hoop/ircd/s_serv.c
 +		return 5;
 +	}
 +#endif
- 	if (IsServer(cptr) &&
- 	    (stat != 'd' && stat != 'p' && stat != 'q' && stat != 's' &&
- 	     stat != 'u' && stat != 'v') &&
-+#ifdef NO_OPER_TRYAGAIN
-+	    !IsOper(sptr))
-+#else
- 	    !((stat == 'o' || stat == 'c') && IsOper(sptr)))
-+#endif
+ 	if (IsServer(cptr))
  	    {
+ 		switch(stat)
+@@ -1397,12 +1475,17 @@
+ 		case 'h': case 'H':     /* H:/D: lines */
+ 		case 'a': case 'A':     /* iauth conf */
+ 		case 'b': case 'B':     /* B:lines */
++#ifdef NO_OPER_TRYAGAIN
++		default:
++#endif
+ 			if (IsOper(sptr))
+ 			{
+ 				break;
+ 			}
+ 			/* else fallthrough */
++#ifndef NO_OPER_TRYAGAIN
+                 default:
++#endif
  		if (check_link(cptr))
  		    {
-@@ -1396,8 +1478,29 @@
+ 			sendto_one(sptr, rpl_str(RPL_TRYAGAIN, parv[0]),
+@@ -1429,8 +1512,29 @@
  	doall = !match(name, ME) && !match(cm, ME);
  	wilds = index(cm, '*') || index(cm, '?');
  
@@ -2120,7 +2117,7 @@ diff -ur --new-file irc2.10.3p3/ircd/s_serv.c irc2.10.3p3-hoop/ircd/s_serv.c
  	case 'L' : case 'l' :
  		/*
  		 * send info about connections which match, or all if the
-@@ -1411,6 +1514,13 @@
+@@ -1450,6 +1554,13 @@
  			    {
  				if (!(acptr = local[i]))
  					continue;
@@ -2134,10 +2131,10 @@ diff -ur --new-file irc2.10.3p3/ircd/s_serv.c irc2.10.3p3-hoop/ircd/s_serv.c
  				if (IsPerson(acptr) && !(MyConnect(sptr) 
  				    && IsAnOper(sptr)) && acptr != sptr)
  					continue;
-@@ -1429,7 +1539,12 @@
+@@ -1468,7 +1579,12 @@
  		else
  		    {
- 			if ((acptr = find_client(cm, NULL)))
+ 			if ((acptr = find_client(cm, NULL)) && MyConnect(acptr))
 -				sendto_one(cptr, Lformat, ME,
 +#ifdef STATS_F
 +				if (stat == 'f')
@@ -2148,7 +2145,7 @@ diff -ur --new-file irc2.10.3p3/ircd/s_serv.c irc2.10.3p3-hoop/ircd/s_serv.c
  					RPL_STATSLINKINFO, parv[0],
  					get_client_name(acptr, isupper(stat)),
  					(int)DBufLength(&acptr->sendQ),
-@@ -1491,8 +1606,24 @@
+@@ -1533,8 +1649,24 @@
  	case 'S' : case 's' : /* S lines */
  		report_configured_links(cptr, parv[0], CONF_SERVICE);
  		break;
@@ -2173,7 +2170,7 @@ diff -ur --new-file irc2.10.3p3/ircd/s_serv.c irc2.10.3p3-hoop/ircd/s_serv.c
  		break;
  	case 'U' : case 'u' : /* uptime */
  	    {
-@@ -1660,8 +1791,8 @@
+@@ -1702,8 +1834,8 @@
  	if (parc == 1 || !MyConnect(sptr))
  	    {
  		sendto_one(sptr, rpl_str(RPL_LUSERCLIENT, parv[0]),
@@ -2184,7 +2181,7 @@ diff -ur --new-file irc2.10.3p3/ircd/s_serv.c irc2.10.3p3-hoop/ircd/s_serv.c
  		if (istat.is_oper)
  			sendto_one(sptr, rpl_str(RPL_LUSEROP, parv[0]),
  				   istat.is_oper);
-@@ -1674,6 +1805,13 @@
+@@ -1716,6 +1848,13 @@
  		sendto_one(sptr, rpl_str(RPL_LUSERME, parv[0]),
  			   istat.is_myclnt, istat.is_myservice,
  			   istat.is_myserv);
@@ -2198,7 +2195,7 @@ diff -ur --new-file irc2.10.3p3/ircd/s_serv.c irc2.10.3p3-hoop/ircd/s_serv.c
  		return 2;
  	    }
  	(void)collapse(parv[1]);
-@@ -1753,6 +1891,13 @@
+@@ -1795,6 +1934,13 @@
  			   count_channels(sptr));
  	sendto_one(sptr, rpl_str(RPL_LUSERME, parv[0]), m_client, m_service,
  		   m_server);
@@ -2212,7 +2209,7 @@ diff -ur --new-file irc2.10.3p3/ircd/s_serv.c irc2.10.3p3-hoop/ircd/s_serv.c
  	return 2;
      }
  
-@@ -2059,7 +2204,13 @@
+@@ -2101,7 +2247,13 @@
  		tname = parv[1];
  	else
  		tname = ME;
@@ -2227,7 +2224,7 @@ diff -ur --new-file irc2.10.3p3/ircd/s_serv.c irc2.10.3p3-hoop/ircd/s_serv.c
  	switch (hunt_server(cptr, sptr, ":%s TRACE :%s", 1, parc, parv))
  	{
  	case HUNTED_PASS: /* note: gets here only if parv[1] exists */
-@@ -2225,7 +2376,11 @@
+@@ -2267,7 +2419,11 @@
  	struct	tm	*tm;
  #endif
  
@@ -2424,15 +2421,6 @@ diff -ur --new-file irc2.10.3p3/ircd/s_user.c irc2.10.3p3-hoop/ircd/s_user.c
  }
  
  /*
-@@ -1929,7 +2026,7 @@
- int	parc;
- char	*parv[];
-     {
--	static	char	quitc[] = "I Quit";
-+	static	char	quitc[] = "";
- 	register char *comment = (parc > 1 && parv[1]) ? parv[1] : quitc;
- 
- 	if (MyClient(sptr) || MyService(sptr))
 @@ -2456,6 +2553,50 @@
  	    {
  		(void)detach_conf(sptr, aconf);
