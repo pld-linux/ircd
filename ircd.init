@@ -17,7 +17,7 @@
 
 # Check that networking is up.
 if is_no "${NETWORKING}"; then
-	msg_Network_Down IRCd
+	msg_network_down IRCd
 	exit 1
 fi
 
@@ -31,7 +31,7 @@ case "$1" in
 		msg_starting "IRCd Server"
 		daemon ircd -c
 	else
-		msg_Already_Running IRCd
+		msg_already_running IRCd
 		exit 1
 	fi
 	touch /var/lock/subsys/ircd
@@ -51,7 +51,7 @@ case "$1" in
   	status ircd
 	;;
   *)
-	msg_Usage "$0 {start|stop|restart|reload|status}"
+	msg_usage "$0 {start|stop|restart|reload|status}"
 	exit 1
 esac
 
