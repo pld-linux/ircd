@@ -23,6 +23,7 @@ Patch2:		%{name}-hm.patch
 # Also MIN_CHANOP_SERV, MIN_CHANOP_CHAN, MIN_CHANOP_USR to 0.
 Patch3:		%{name}-hoop3.diff
 Patch4:		%{name}-ac-workaround.patch
+Patch5:		%{name}-conf_delimiter_4_easy_upgrade.patch
 URL:		http://www.irc.org/
 #BuildRequires:	autoconf
 BuildRequires:	automake
@@ -61,6 +62,7 @@ systemach bez niego.
 %{?with_hm:%patch2 -p1}
 %{!?with_hm:%patch3 -p1}
 %patch4 -p1
+%patch5 -p1
 
 %build
 cp -f /usr/share/automake/config.* support
@@ -97,8 +99,7 @@ install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/%{name}
 install %{SOURCE2} $RPM_BUILD_ROOT/etc/sysconfig/%{name}
 install %{SOURCE3} $RPM_BUILD_ROOT/etc/logrotate.d/%{name}
 
-%{?with_ipv6:tr ':' '%' < $RPM_BUILD_ROOT%{_sysconfdir}/example.conf > $RPM_BUILD_ROOT%{_sysconfdir}/ircd.conf}
-%{!?with_ipv6:install $RPM_BUILD_ROOT%{_sysconfdir}/example.conf $RPM_BUILD_ROOT%{_sysconfdir}/ircd.conf}
+tr ':' '%' < $RPM_BUILD_ROOT%{_sysconfdir}/example.conf > $RPM_BUILD_ROOT%{_sysconfdir}/ircd.conf
 
 rm -f $RPM_BUILD_ROOT%{_sysconfdir}/example.conf
 
