@@ -158,6 +158,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_sysconfdir}/ircd
 %{_mandir}/*/*
 %attr(755,root,root) %{_sbindir}/*
+%attr(755,root,root) %{_chroot}%{_sbindir}/*
 %attr(750, root, root) %dir %{_chroot}
 %{_chroot}/lib
 %dir %{_chroot}%{_sysconfdir}
