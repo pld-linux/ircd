@@ -6,7 +6,7 @@ Summary:	Internet Relay Chat Server
 Summary(pl):	Serwer IRC (Internet Relay Chat)
 Name:		ircd
 Version:	2.11.0
-Release:	0.1
+Release:	1
 License:	GPL
 Group:		Daemons
 Source0:	ftp://ftp.irc.org/irc/server/irc%{version}.tgz
@@ -15,6 +15,7 @@ Source1:	%{name}.init
 Source2:	%{name}.sysconfig
 Source3:	%{name}.logrotate
 Source4:	%{name}.conf
+Source5:	%{name}.motd
 Patch0:		%{name}-linux.patch
 Patch1:		%{name}-conf_delimiter_4_easy_upgrade.patch
 Patch2:		%{name}-config.patch
@@ -62,6 +63,7 @@ jest tak¿e wersja obs³uguj±ca IPv6.
 
 %build
 cp -f /usr/share/automake/config.* support
+cp -f %{SOURCE5} support
 
 mdir=$(pwd)
 mkdir .ircd6
@@ -117,17 +119,6 @@ install %{SOURCE3} $RPM_BUILD_ROOT/etc/logrotate.d/%{name}
 install %{SOURCE4} $RPM_BUILD_ROOT/%{_sysconfdir}/%{name}.conf
 
 rm -f $RPM_BUILD_ROOT%{_sysconfdir}/{iauth,ircd}.conf.example
-
-cat << EOF > $RPM_BUILD_ROOT%{_sysconfdir}/ircd.motd
-
-Powered by PLD Linux Distribution IRC Server!
-
-WWW:        http://www.pld-linux.org/
-FTP:        ftp://ftp.pld-linux.org/
-e-mail:      feedback@pld-linux.org
-
-EOF
-
 touch $RPM_BUILD_ROOT%{_localstatedir}/ircd.{pid,tune}
 
 %clean
@@ -178,6 +169,21 @@ if [ "$1" = "0" ]; then
 	%groupremove ircd
 fi
 
+%triggerpostun -- %{name} < 2.11.0
+if [ -f %{_sysconfdir}/ircd.conf ]; then
+	echo "Saving old configuration as %{_sysconfdir}/ircd.conf.rpmsave"
+	cp -f %{_sysconfdir}/ircd.conf %{_sysconfdir}/ircd.conf.rpmsave
+	echo "Adjusting configuration for ircd 2.11"
+	sed -i -e '{ /^M%/s/$/%000A/; /^[iI]%/s/$/%/g; /^[oO]%/s/$/%/g; }' %{_sysconfdir}/ircd.conf
+
+	# we have to do part of %post here to have ircd working after upgrade from 2.10.x to 2.11.x
+	if [ -f /var/lock/subsys/ircd ]; then
+		/etc/rc.d/init.d/ircd restart 1>&2
+	else
+		echo "Run \"/etc/rc.d/init.d/ircd start\" to start IRC daemon."
+	fi
+fi
+					
 %files
 %defattr(644,root,root,755)
 %doc doc/{2.11-New,2.10-New,2.9-New,Authors,ChangeLog,Etiquette,SERVICE.txt,m4macros}
@@ -191,8 +197,8 @@ fi
 %attr(750,root,ircd) %dir %{_sysconfdir}
 %attr(660,root,ircd) %config(noreplace) %{_sysconfdir}/ircd.conf
 %attr(660,root,ircd) %config(noreplace) %{_sysconfdir}/iauth.conf
+%attr(664,root,ircd) %config(noreplace) %{_sysconfdir}/ircd.motd
 %attr(664,root,ircd) %{_sysconfdir}/ircd.m4
-%attr(664,root,ircd) %{_sysconfdir}/ircd.motd
 %{_mandir}/man*/*
 %attr(754,root,root) /etc/rc.d/init.d/%{name}
 %attr(640,root,root) %config(noreplace) %verify(not size mtime md5) /etc/sysconfig/%{name}
