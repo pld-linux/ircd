@@ -175,4 +175,6 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_chroot}/log
 %dir %{_chroot}/run
 %dir %{_chroot}%{_sbindir}
+%dir %{_sbindir}
+%attr(755, root, root) %{_sbindir}/*
 %attr(755, root, root) %{_chroot}%{_sbindir}/iauth
