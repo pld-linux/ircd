@@ -1,0 +1,26 @@
+diff -ur irc2.11.0b14.orig/support/configure irc2.11.0b14/support/configure
+--- irc2.11.0b14.orig/support/configure	2004-09-29 00:42:08.000000000 +0200
++++ irc2.11.0b14/support/configure	2004-10-21 08:23:57.234789328 +0200
+@@ -7973,7 +7973,8 @@
+     return level1(data, format, ap);
+   else {
+     if(rounds == 2) {
+-      va_list ap2 = ap;
++      va_list ap2;
++      ap2[0] = ap[0];
+       char *arg = va_arg(ap2, char *);
+       strcpy(buf1, arg);
+     }
+diff -ur irc2.11.0b14.orig/support/configure.in irc2.11.0b14/support/configure.in
+--- irc2.11.0b14.orig/support/configure.in	2004-09-29 00:42:08.000000000 +0200
++++ irc2.11.0b14/support/configure.in	2004-10-21 08:24:40.542205600 +0200
+@@ -512,7 +512,8 @@
+     return level1(data, format, ap);
+   else {
+     if(rounds == 2) {
+-      va_list ap2 = ap;
++      va_list ap2;
++      ap2[0] = ap[0];
+       char *arg = va_arg(ap2, char *);
+       strcpy(buf1, arg);
+     }
