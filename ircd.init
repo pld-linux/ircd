@@ -57,10 +57,8 @@ case "$1" in
 	;;
   reload)
 	msg_reloading "IRCd Server"
-	busy
 	killproc ircd -HUP
 	RETVAL=$?
-	[ $RETVAL -eq 0 ] && ok || died
 	;;
   restart)
 	$0 stop
