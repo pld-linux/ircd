@@ -5,6 +5,7 @@ License:	GPL
 Summary:	Internet Relay Chat Server
 Summary(pl):	Serwer IRC (Internet Relay Chat)
 Group:		Daemons
+Group(de):	Server
 Group(pl):	Serwery
 URL:		http://www.xs4all.nl/~carlo17/ircd-dev/
 Source0:	ftp://ftp.funet.fi/pub/unix/irc/server/irc%{version}.tgz
@@ -38,7 +39,6 @@ wspiera tak¿e protokó³ IPv6.
 %patch2 -p1
 
 %build
-LDFLAGS="-s"
 cd support && autoheader && autoconf && cd ..
 %configure \
 	--logdir=%{_var}/log/%{name} \
@@ -83,7 +83,7 @@ EOF
 mv -f $RPM_BUILD_ROOT%{_bindir}/irc $RPM_BUILD_ROOT%{_bindir}/ircs
 mv -f $RPM_BUILD_ROOT%{_mandir}/man1/irc.1 $RPM_BUILD_ROOT%{_mandir}/man1/ircs.1
 
-gzip -9nf $RPM_BUILD_ROOT%{_mandir}/man*/* ../doc/{2.10-New,2.9-New,Authors,ChangeLog,Etiquette,SERVICE.txt,m4macros}
+gzip -9nf ../doc/{2.10-New,2.9-New,Authors,ChangeLog,Etiquette,SERVICE.txt,m4macros}
 
 touch $RPM_BUILD_ROOT%{_localstatedir}/ircd.{pid,tune}
 
