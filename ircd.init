@@ -43,7 +43,11 @@ case "$1" in
 	rm -f /var/run/ircd.pid
 	rm -f /var/lock/subsys/ircd
 	;;
-  restart|reload)
+  reload)
+  	msg_reloading "IRCd Server"
+	killproc ircd -HUP
+	;;
+  restart)
   	$0 stop
 	$0 start
 	;;
