@@ -11,7 +11,6 @@ diff -ur irc2.11.0b14.orig/common/os.h irc2.11.0b14/common/os.h
  #endif
  
  #if HAVE_STROPTS_H
-Only in irc2.11.0b14/common: os.h.orig
 diff -ur irc2.11.0b14.orig/support/Makefile.in irc2.11.0b14/support/Makefile.in
 --- irc2.11.0b14.orig/support/Makefile.in	2004-10-04 21:55:34.000000000 +0200
 +++ irc2.11.0b14/support/Makefile.in	2004-10-11 19:35:50.530169696 +0200
@@ -31,8 +30,8 @@ diff -ur irc2.11.0b14.orig/support/Makefile.in irc2.11.0b14/support/Makefile.in
 -ircd_conf_dir = @sysconfdir@
 +ircd_conf_dir = $(DESTDIR)@sysconfdir@
  # Directory where state files (ircd.pid, ircd.tune) live.
--ircd_var_dir = @localstatedir@/run
-+ircd_var_dir = $(DESTDIR)@localstatedir@/run
+-ircd_var_dir = @rundir@
++ircd_var_dir = $(DESTDIR)@rundir@
  # Directory where log files (users, opers, rejects and auth) live.
 -ircd_log_dir = @logdir@
 +ircd_log_dir = $(DESTDIR)@logdir@

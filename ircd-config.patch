@@ -86,8 +86,8 @@ diff -ur irc2.11.0b15.orig/support/config.h.dist irc2.11.0b15/support/config.h.d
   *
   * Defining to 0 disables entering split-mode.
   */
--#define SPLIT_USERS	70000
--#define SPLIT_SERVERS	30
+-#define SPLIT_USERS	85000
+-#define SPLIT_SERVERS	85
 +#define SPLIT_USERS	0
 +#define SPLIT_SERVERS	0
  
