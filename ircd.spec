@@ -5,12 +5,12 @@
 Summary:	Internet Relay Chat Server
 Summary(pl):	Serwer IRC (Internet Relay Chat)
 Name:		ircd
-Version:	2.11.0
+Version:	2.11.1
 Release:	1
 License:	GPL
 Group:		Daemons
 Source0:	ftp://ftp.irc.org/irc/server/irc%{version}.tgz
-# Source0-md5:	fb8fcfbb87f0d1cd906f70e4693b492a
+# Source0-md5:	981cff74a11a7ffacab4ce26656b3f55
 Source1:	%{name}.init
 Source2:	%{name}.sysconfig
 Source3:	%{name}.logrotate
@@ -74,6 +74,7 @@ cd .ircd6
 export ac_cv_lib_nsl_socket=no
 %configure2_13 \
 	--with-logdir=%{_var}/log/%{name} \
+	--with-rundir=%{_var}/lib/%{name} \
 	--enable-dsm \
 	--with-zlib \
 	--enable-ip6
@@ -87,6 +88,7 @@ cd $mdir
 export ac_cv_lib_nsl_socket=no
 %configure2_13 \
 	--with-logdir=%{_var}/log/%{name} \
+	--with-rundir=%{_var}/lib/%{name} \
 	--enable-dsm \
 	--with-zlib
 
