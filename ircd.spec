@@ -171,7 +171,7 @@ if [ -f %{_sysconfdir}/ircd.conf ]; then
 		echo "Run \"/etc/rc.d/init.d/ircd start\" to start IRC daemon."
 	fi
 fi
-					
+
 %files
 %defattr(644,root,root,755)
 %doc doc/{2.11-New,2.10-New,2.9-New,Authors,ChangeLog,Etiquette,SERVICE.txt,m4macros}
