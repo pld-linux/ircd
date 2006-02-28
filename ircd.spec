@@ -24,18 +24,18 @@ URL:		http://www.irc.org/
 #BuildRequires:	autoconf
 BuildRequires:	automake
 BuildRequires:	ncurses-devel
-BuildRequires:	textutils
 BuildRequires:	rpmbuild(macros) >= 1.202
+BuildRequires:	textutils
 BuildRequires:	zlib-devel
-PreReq:		rc-scripts
-Requires(pre):	/usr/bin/getgid
-Requires(pre):	/bin/id
-Requires(pre):	/usr/sbin/groupadd
-Requires(pre):	/usr/sbin/useradd
 Requires(post):	fileutils
 Requires(post,preun):	/sbin/chkconfig
 Requires(postun):	/usr/sbin/groupdel
 Requires(postun):	/usr/sbin/userdel
+Requires(pre):	/bin/id
+Requires(pre):	/usr/bin/getgid
+Requires(pre):	/usr/sbin/groupadd
+Requires(pre):	/usr/sbin/useradd
+Requires:	rc-scripts
 Provides:	group(ircd)
 Provides:	user(ircd)
 Obsoletes:	bircd
@@ -96,6 +96,7 @@ cd "`support/config.guess`"
 %{__make} all
 
 %install
+rm -rf $RPM_BUILD_ROOT
 tdir=$(support/config.guess)
 
 rm -rf $RPM_BUILD_ROOT
