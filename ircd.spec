@@ -24,7 +24,7 @@ URL:		http://www.irc.org/
 #BuildRequires:	autoconf
 BuildRequires:	automake
 BuildRequires:	ncurses-devel
-BuildRequires:	rpmbuild(macros) >= 1.202
+BuildRequires:	rpmbuild(macros) >= 1.268
 BuildRequires:	textutils
 BuildRequires:	zlib-devel
 Requires(post):	fileutils
@@ -133,26 +133,18 @@ rm -rf $RPM_BUILD_ROOT
 
 %post
 /sbin/chkconfig --add ircd
-if [ -f /var/lock/subsys/ircd ]; then
-	/etc/rc.d/init.d/ircd restart 1>&2
-else
-	echo "Run \"/etc/rc.d/init.d/ircd start\" to start IRC daemon."
-fi
+%service ircd restart "IRC daemon"
 touch /var/log/ircd/ircd.{auth,opers,rejects,users,log}
 chmod 640 /var/log/ircd/*
 chown ircd:ircd /var/log/ircd/*
 
 %preun
-# If package is being erased for the last time.
 if [ "$1" = "0" ]; then
-	if [ -f /var/lock/subsys/ircd ]; then
-		/etc/rc.d/init.d/ircd stop 1>&2
-	fi
+	%service ircd stop
 	/sbin/chkconfig --del ircd
 fi
 
 %postun
-# If package is being erased for the last time.
 if [ "$1" = "0" ]; then
 	%userremove ircd
 	%groupremove ircd
@@ -166,11 +158,7 @@ if [ -f %{_sysconfdir}/ircd.conf ]; then
 	sed -i -e '{ /^M%/s/$/%000A/; /^[iI]%/s/$/%/g; /^[oO]%/s/$/%/g; }' %{_sysconfdir}/ircd.conf
 
 	# we have to do part of %post here to have ircd working after upgrade from 2.10.x to 2.11.x
-	if [ -f /var/lock/subsys/ircd ]; then
-		/etc/rc.d/init.d/ircd restart 1>&2
-	else
-		echo "Run \"/etc/rc.d/init.d/ircd start\" to start IRC daemon."
-	fi
+	%service -q ircd restart
 fi
 
 %files
