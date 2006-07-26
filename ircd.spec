@@ -25,7 +25,6 @@ URL:		http://www.irc.org/
 BuildRequires:	automake
 BuildRequires:	ncurses-devel
 BuildRequires:	rpmbuild(macros) >= 1.268
-BuildRequires:	textutils
 BuildRequires:	zlib-devel
 Requires(post):	fileutils
 Requires(post,preun):	/sbin/chkconfig
@@ -119,7 +118,7 @@ done
 install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/%{name}
 install %{SOURCE2} $RPM_BUILD_ROOT/etc/sysconfig/%{name}
 install %{SOURCE3} $RPM_BUILD_ROOT/etc/logrotate.d/%{name}
-install %{SOURCE4} $RPM_BUILD_ROOT/%{_sysconfdir}/%{name}.conf
+install %{SOURCE4} $RPM_BUILD_ROOT%{_sysconfdir}/%{name}.conf
 
 rm -f $RPM_BUILD_ROOT%{_sysconfdir}/{iauth,ircd}.conf.example
 touch $RPM_BUILD_ROOT%{_localstatedir}/ircd.{pid,tune}
