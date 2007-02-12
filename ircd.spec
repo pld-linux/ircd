@@ -4,7 +4,7 @@
 #
 %define	_rc	b18
 Summary:	Internet Relay Chat Server
-Summary(pl):	Serwer IRC (Internet Relay Chat)
+Summary(pl.UTF-8):   Serwer IRC (Internet Relay Chat)
 Name:		ircd
 Version:	2.11.0
 Release:	0.%{_rc}.1
@@ -50,9 +50,9 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 Ircd is the server (daemon) program for the Internet Relay Chat
 Program. There is also version with IPv6 support enclosed.
 
-%description -l pl
-Ircd jest serwerem us≥ugi IRC (Internet Relay Chat Program). Za≥±czona
-jest takøe wersja obs≥uguj±ca IPv6.
+%description -l pl.UTF-8
+Ircd jest serwerem us≈Çugi IRC (Internet Relay Chat Program). Za≈ÇƒÖczona
+jest tak≈ºe wersja obs≈ÇugujƒÖca IPv6.
 
 %prep
 %setup -q -n irc%{version}%{_rc}
