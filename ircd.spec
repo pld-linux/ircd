@@ -3,7 +3,7 @@
 %bcond_with	crypt	# build with crypted passwords support
 #
 Summary:	Internet Relay Chat Server
-Summary(pl.UTF-8):   Serwer IRC (Internet Relay Chat)
+Summary(pl.UTF-8):	Serwer IRC (Internet Relay Chat)
 Name:		ircd
 Version:	2.11.1p1
 Release:	3
