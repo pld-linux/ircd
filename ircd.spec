@@ -166,7 +166,7 @@ fi
 %doc doc/{*.conf.example,rfc*.txt,README,RELEASE_{LOG,NOTES},stats.txt,ISO-3166-1}
 %attr(755,root,root) %{_sbindir}/*
 %attr(770,root,ircd) %dir %{_var}/log/ircd
-%attr(770,root,ircd) %dir %{_var}/log/archiv/ircd
+%attr(770,root,ircd) %dir %{_var}/log/archive/ircd
 %attr(770,root,ircd) %dir %{_localstatedir}
 %attr(640,ircd,ircd) %ghost %{_localstatedir}/ircd.pid
 %attr(640,ircd,ircd) %ghost %{_localstatedir}/ircd.tune
