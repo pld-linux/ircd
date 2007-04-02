@@ -99,7 +99,7 @@ rm -rf $RPM_BUILD_ROOT
 tdir=$(support/config.guess)
 
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT{%{_var}/log/{,archiv/}ircd,%{_libdir}/ircd,%{_sbindir},%{_mandir}/man{1,3,5,8}} \
+install -d $RPM_BUILD_ROOT{%{_var}/log/{,archive/}ircd,%{_libdir}/ircd,%{_sbindir},%{_mandir}/man{1,3,5,8}} \
 	$RPM_BUILD_ROOT{%{_sysconfdir},/etc/{rc.d/init.d,sysconfig,logrotate.d}} \
 	$RPM_BUILD_ROOT%{_localstatedir}
 cd $tdir
