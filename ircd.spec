@@ -40,6 +40,7 @@ Provides:	user(ircd)
 Obsoletes:	bircd
 Obsoletes:	ircd-hybrid
 Obsoletes:	ircd-ptlink
+Conflicts:	logrotate < 3.7.4
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define		_sysconfdir	/etc/%{name}
