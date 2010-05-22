@@ -8,7 +8,7 @@ Name:		ircd
 Version:	2.11.1p1
 Release:	3
 License:	GPL
-Group:		Daemons
+Group:		Networking/Daemons
 Source0:	ftp://ftp.irc.org/irc/server/irc%{version}.tgz
 # Source0-md5:	c5a2b3097a5fbeb91b39412730b02ab5
 Source1:	%{name}.init
