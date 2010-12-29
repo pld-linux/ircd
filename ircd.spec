@@ -5,12 +5,12 @@
 Summary:	Internet Relay Chat Server
 Summary(pl.UTF-8):	Serwer IRC (Internet Relay Chat)
 Name:		ircd
-Version:	2.11.1p1
-Release:	3
+Version:	2.11.2p3
+Release:	1
 License:	GPL
 Group:		Networking/Daemons
-Source0:	ftp://ftp.irc.org/irc/server/irc%{version}.tgz
-# Source0-md5:	c5a2b3097a5fbeb91b39412730b02ab5
+Source0:	http://www.irc.org/ftp/irc/server/irc%{version}.tgz
+# Source0-md5:	9c635f7d25906be054932f198303fb67
 Source1:	%{name}.init
 Source2:	%{name}.sysconfig
 Source3:	%{name}.logrotate
