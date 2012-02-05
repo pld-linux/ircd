@@ -1,4 +1,5 @@
 /var/log/ircd/users {
+	su root ircd
 	olddir /var/log/archive/ircd
         notifempty
 	create 640 ircd ircd
@@ -9,6 +10,7 @@
 }
 
 /var/log/ircd/opers {
+	su root ircd
 	olddir /var/log/archive/ircd
         notifempty
 	create 640 ircd ircd
@@ -19,6 +21,7 @@
 }
 
 /var/log/ircd/rejects {
+	su root ircd
 	olddir /var/log/archive/ircd
         notifempty
 	create 640 ircd ircd
@@ -29,6 +32,7 @@
 }
 
 /var/log/ircd/auth {
+	su root ircd
 	olddir /var/log/archive/ircd
         notifempty
 	create 640 ircd ircd
@@ -39,6 +43,7 @@
 }
 
 /var/log/ircd/ircd.log {
+	su root ircd
 	olddir /var/log/archive/ircd
 	notifempty
 	create 640 ircd ircd
