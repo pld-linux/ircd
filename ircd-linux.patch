@@ -1,6 +1,6 @@
-diff -ur irc2.11.0b14.orig/common/os.h irc2.11.0b14/common/os.h
---- irc2.11.0b14.orig/common/os.h	2004-10-02 03:16:16.000000000 +0200
-+++ irc2.11.0b14/common/os.h	2004-10-11 19:34:34.092789944 +0200
+diff -urNp -x '*.orig' irc2.11.2p3.org/common/os.h irc2.11.2p3/common/os.h
+--- irc2.11.2p3.org/common/os.h	2008-06-09 18:16:08.000000000 +0200
++++ irc2.11.2p3/common/os.h	2023-02-02 08:56:29.680400492 +0100
 @@ -139,6 +139,9 @@
  /* Linux 2.1.xx supports poll(), header files are not upto date yet */
  #  define POLLRDNORM 0x0040
@@ -10,11 +10,11 @@ diff -ur irc2.11.0b14.orig/common/os.h irc2.11.0b14/common/os.h
 +# endif
  #endif
  
- #if HAVE_STROPTS_H
-diff -ur irc2.11.0b14.orig/support/Makefile.in irc2.11.0b14/support/Makefile.in
---- irc2.11.0b14.orig/support/Makefile.in	2004-10-04 21:55:34.000000000 +0200
-+++ irc2.11.0b14/support/Makefile.in	2004-10-11 19:35:50.530169696 +0200
-@@ -69,17 +69,17 @@
+ #ifdef HAVE_STROPTS_H
+diff -urNp -x '*.orig' irc2.11.2p3.org/support/Makefile.in irc2.11.2p3/support/Makefile.in
+--- irc2.11.2p3.org/support/Makefile.in	2008-06-07 01:51:26.000000000 +0200
++++ irc2.11.2p3/support/Makefile.in	2023-02-02 08:56:29.680400492 +0100
+@@ -69,17 +69,17 @@ TKSERV = tkserv
  # Directories definitions
  #
  # Directory in which to install ircd, iauth, ircdwatch, mkpasswd and chkconf.

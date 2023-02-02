@@ -6,7 +6,7 @@ Summary:	Internet Relay Chat Server
 Summary(pl.UTF-8):	Serwer IRC (Internet Relay Chat)
 Name:		ircd
 Version:	2.11.2p3
-Release:	3
+Release:	4
 License:	GPL
 Group:		Networking/Daemons
 Source0:	http://www.irc.org/ftp/irc/server/irc%{version}.tgz
