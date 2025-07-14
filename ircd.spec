@@ -56,9 +56,9 @@ jest także wersja obsługująca IPv6.
 
 %prep
 %setup -q -n irc%{version}
-%patch0 -p1
-%patch1 -p1
-%patch2 -p1
+%patch -P0 -p1
+%patch -P1 -p1
+%patch -P2 -p1
 %{?with_crypt:%patch3 -p1}
 
 %build
